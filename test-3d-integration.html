@@ -307,21 +307,19 @@
             }
             
             createBackground() {
-                // Load sky/landscape image - will be positioned behind glass only
-                const loader = new THREE.TextureLoader();
-                loader.load('./img/tlo1.jpg', 
-                    (texture) => {
-                        console.log('✅ Tło załadowane!');
-                        this.skyTexture = texture;
-                        this.updateSkyPlane();
-                    },
-                    (progress) => {
-                        console.log('⏳ Ładowanie tła...');
-                    },
-                    (error) => {
-                        console.error('❌ Błąd ładowania tła:', error);
-                    }
-                );
+                // Load sky/landscape image using standard Image
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    console.log('✅ Tło załadowane!');
+                    this.skyTexture = new THREE.Texture(img);
+                    this.skyTexture.needsUpdate = true;
+                    this.updateSkyPlane();
+                };
+                img.onerror = (e) => {
+                    console.error('❌ Błąd ładowania tła:', e);
+                };
+                img.src = './img/tlo1.jpg';
             }
             
             updateSkyPlane() {
