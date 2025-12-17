@@ -351,14 +351,19 @@
                 
                 if (!texture) return;
                 
-                // Sky size - larger than window, positioned far behind
+                // Calculate glass area (inside frame)
                 const w = this.config.width * this.SCALE;
                 const h = this.config.height * this.SCALE;
+                const t = this.FRAME_THICKNESS * this.SCALE;
                 
-                const skyGeom = new THREE.PlaneGeometry(w * 1.5, h * 1.5);
+                // Glass size (smaller than window - inside the frame)
+                const glassW = w - t * 2.5;
+                const glassH = h - t * 2.5;
+                
+                const skyGeom = new THREE.PlaneGeometry(glassW, glassH);
                 const skyMat = new THREE.MeshBasicMaterial({ map: texture });
                 this.skyPlane = new THREE.Mesh(skyGeom, skyMat);
-                this.skyPlane.position.z = -0.5; // Far behind window
+                this.skyPlane.position.z = -0.15; // Just behind glass
                 this.scene.add(this.skyPlane);
             }
             
