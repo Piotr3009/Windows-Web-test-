@@ -317,10 +317,12 @@
                 const imgSky = new Image();
                 imgSky.crossOrigin = 'anonymous';
                 imgSky.onload = () => {
-                    console.log('✅ Tło niebo załadowane!');
+                    console.log('✅ Tło NIEBO załadowane!');
                     this.backgrounds.external = new THREE.Texture(imgSky);
                     this.backgrounds.external.needsUpdate = true;
-                    this.updateSkyPlane();
+                };
+                imgSky.onerror = (e) => {
+                    console.error('❌ Błąd ładowania NIEBA (tlo1.jpg):', e);
                 };
                 imgSky.src = './img/tlo1.jpg';
                 
@@ -328,9 +330,14 @@
                 const imgRoom = new Image();
                 imgRoom.crossOrigin = 'anonymous';
                 imgRoom.onload = () => {
-                    console.log('✅ Tło wnętrze załadowane!');
+                    console.log('✅ Tło WNĘTRZE załadowane!');
                     this.backgrounds.internal = new THREE.Texture(imgRoom);
                     this.backgrounds.internal.needsUpdate = true;
+                    // Update sky plane when first background loads
+                    this.updateSkyPlane();
+                };
+                imgRoom.onerror = (e) => {
+                    console.error('❌ Błąd ładowania WNĘTRZA (internal1.jpg):', e);
                 };
                 imgRoom.src = './img/internal1.jpg';
                 
@@ -353,7 +360,12 @@
                     ? this.backgrounds.internal  // z zewnątrz widzimy pokój
                     : this.backgrounds.external; // od środka widzimy niebo
                 
-                if (!texture) return;
+                console.log('🖼️ updateSkyPlane - widok:', this.currentView, 'tekstura:', texture ? 'OK' : 'BRAK');
+                
+                if (!texture) {
+                    console.warn('⚠️ Brak tekstury dla widoku:', this.currentView);
+                    return;
+                }
                 
                 // Calculate glass area (inside frame)
                 const w = this.config.width * this.SCALE;
