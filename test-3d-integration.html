@@ -307,19 +307,34 @@
             }
             
             createBackground() {
-                // Load sky/landscape image
+                // Load sky/landscape image - will be positioned behind glass only
                 const loader = new THREE.TextureLoader();
                 loader.load('img/tlo do okien 3d.jpg', (texture) => {
-                    // Sky plane behind window
-                    const skyGeom = new THREE.PlaneGeometry(8, 5);
-                    const skyMat = new THREE.MeshBasicMaterial({ map: texture });
-                    this.skyPlane = new THREE.Mesh(skyGeom, skyMat);
-                    this.skyPlane.position.z = -0.4;
-                    this.scene.add(this.skyPlane);
+                    this.skyTexture = texture;
+                    this.updateSkyPlane();
                 });
                 
                 // Brick wall around window
                 this.createBrickWall();
+            }
+            
+            updateSkyPlane() {
+                // Remove old sky plane if exists
+                if (this.skyPlane) {
+                    this.scene.remove(this.skyPlane);
+                }
+                
+                if (!this.skyTexture) return;
+                
+                // Sky size matches window opening (visible only through glass)
+                const w = this.config.width * this.SCALE;
+                const h = this.config.height * this.SCALE;
+                
+                const skyGeom = new THREE.PlaneGeometry(w * 0.95, h * 0.95);
+                const skyMat = new THREE.MeshBasicMaterial({ map: this.skyTexture });
+                this.skyPlane = new THREE.Mesh(skyGeom, skyMat);
+                this.skyPlane.position.z = -0.25; // Behind window frame
+                this.scene.add(this.skyPlane);
             }
             
             createBrickWall() {
@@ -364,15 +379,27 @@
                     }
                 }
                 
-                const brickTexture = new THREE.CanvasTexture(canvas);
-                brickTexture.wrapS = THREE.RepeatWrapping;
-                brickTexture.wrapT = THREE.RepeatWrapping;
-                brickTexture.repeat.set(3, 3);
+                this.brickTexture = new THREE.CanvasTexture(canvas);
+                this.brickTexture.wrapS = THREE.RepeatWrapping;
+                this.brickTexture.wrapT = THREE.RepeatWrapping;
+                this.brickTexture.repeat.set(3, 3);
                 
-                const brickMat = new THREE.MeshStandardMaterial({ 
-                    map: brickTexture,
+                this.brickMaterial = new THREE.MeshStandardMaterial({ 
+                    map: this.brickTexture,
                     roughness: 0.85
                 });
+                
+                this.updateBrickWall();
+            }
+            
+            updateBrickWall() {
+                // Remove old wall pieces
+                if (this.wallPieces) {
+                    this.wallPieces.forEach(piece => this.scene.remove(piece));
+                }
+                this.wallPieces = [];
+                
+                if (!this.brickMaterial) return;
                 
                 // Wall with hole for window
                 const wallWidth = 3.5;
@@ -380,38 +407,43 @@
                 const windowHoleW = this.config.width * this.SCALE + 0.08;
                 const windowHoleH = this.config.height * this.SCALE + 0.08;
                 
-                // Store wall references for updates
-                this.wallPieces = [];
-                
                 // Top piece
                 const topH = (wallHeight - windowHoleH) / 2;
-                const topGeom = new THREE.BoxGeometry(wallWidth, topH, 0.12);
-                const topWall = new THREE.Mesh(topGeom, brickMat);
-                topWall.position.set(0, windowHoleH/2 + topH/2, -0.2);
-                this.scene.add(topWall);
-                this.wallPieces.push(topWall);
+                if (topH > 0) {
+                    const topGeom = new THREE.BoxGeometry(wallWidth, topH, 0.12);
+                    const topWall = new THREE.Mesh(topGeom, this.brickMaterial);
+                    topWall.position.set(0, windowHoleH/2 + topH/2, -0.2);
+                    this.scene.add(topWall);
+                    this.wallPieces.push(topWall);
+                }
                 
                 // Bottom piece
-                const bottomGeom = new THREE.BoxGeometry(wallWidth, topH, 0.12);
-                const bottomWall = new THREE.Mesh(bottomGeom, brickMat);
-                bottomWall.position.set(0, -windowHoleH/2 - topH/2, -0.2);
-                this.scene.add(bottomWall);
-                this.wallPieces.push(bottomWall);
+                if (topH > 0) {
+                    const bottomGeom = new THREE.BoxGeometry(wallWidth, topH, 0.12);
+                    const bottomWall = new THREE.Mesh(bottomGeom, this.brickMaterial);
+                    bottomWall.position.set(0, -windowHoleH/2 - topH/2, -0.2);
+                    this.scene.add(bottomWall);
+                    this.wallPieces.push(bottomWall);
+                }
                 
                 // Left piece
                 const sideW = (wallWidth - windowHoleW) / 2;
-                const leftGeom = new THREE.BoxGeometry(sideW, windowHoleH, 0.12);
-                const leftWall = new THREE.Mesh(leftGeom, brickMat);
-                leftWall.position.set(-windowHoleW/2 - sideW/2, 0, -0.2);
-                this.scene.add(leftWall);
-                this.wallPieces.push(leftWall);
+                if (sideW > 0) {
+                    const leftGeom = new THREE.BoxGeometry(sideW, windowHoleH, 0.12);
+                    const leftWall = new THREE.Mesh(leftGeom, this.brickMaterial);
+                    leftWall.position.set(-windowHoleW/2 - sideW/2, 0, -0.2);
+                    this.scene.add(leftWall);
+                    this.wallPieces.push(leftWall);
+                }
                 
                 // Right piece
-                const rightGeom = new THREE.BoxGeometry(sideW, windowHoleH, 0.12);
-                const rightWall = new THREE.Mesh(rightGeom, brickMat);
-                rightWall.position.set(windowHoleW/2 + sideW/2, 0, -0.2);
-                this.scene.add(rightWall);
-                this.wallPieces.push(rightWall);
+                if (sideW > 0) {
+                    const rightGeom = new THREE.BoxGeometry(sideW, windowHoleH, 0.12);
+                    const rightWall = new THREE.Mesh(rightGeom, this.brickMaterial);
+                    rightWall.position.set(windowHoleW/2 + sideW/2, 0, -0.2);
+                    this.scene.add(rightWall);
+                    this.wallPieces.push(rightWall);
+                }
             }
             
             loadBackground() {
@@ -623,8 +655,15 @@
             }
             
             updateConfig(newConfig) {
+                const sizeChanged = newConfig.width !== undefined || newConfig.height !== undefined;
                 Object.assign(this.config, newConfig);
                 this.createWindow();
+                
+                // Update background elements if size changed
+                if (sizeChanged) {
+                    this.updateSkyPlane();
+                    this.updateBrickWall();
+                }
             }
             
             onResize() {
