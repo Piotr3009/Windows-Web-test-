@@ -309,10 +309,19 @@
             createBackground() {
                 // Load sky/landscape image - will be positioned behind glass only
                 const loader = new THREE.TextureLoader();
-                loader.load('img/tlo1.jpg', (texture) => {
-                    this.skyTexture = texture;
-                    this.updateSkyPlane();
-                });
+                loader.load('img/tlo1.jpg', 
+                    (texture) => {
+                        console.log('✅ Tło załadowane!');
+                        this.skyTexture = texture;
+                        this.updateSkyPlane();
+                    },
+                    (progress) => {
+                        console.log('⏳ Ładowanie tła...');
+                    },
+                    (error) => {
+                        console.error('❌ Błąd ładowania tła:', error);
+                    }
+                );
             }
             
             updateSkyPlane() {
@@ -323,14 +332,14 @@
                 
                 if (!this.skyTexture) return;
                 
-                // Sky size matches window opening (visible only through glass)
+                // Sky size - larger than window, positioned far behind
                 const w = this.config.width * this.SCALE;
                 const h = this.config.height * this.SCALE;
                 
-                const skyGeom = new THREE.PlaneGeometry(w * 0.95, h * 0.95);
+                const skyGeom = new THREE.PlaneGeometry(w * 1.5, h * 1.5);
                 const skyMat = new THREE.MeshBasicMaterial({ map: this.skyTexture });
                 this.skyPlane = new THREE.Mesh(skyGeom, skyMat);
-                this.skyPlane.position.z = -0.25; // Behind window frame
+                this.skyPlane.position.z = -0.5; // Far behind window
                 this.scene.add(this.skyPlane);
             }
             
@@ -383,28 +392,21 @@
             }
             
             createGlassMaterial() {
-                let opacity = 0.15;
-                let color = 0x88ccff;
-                let roughness = 0.05;
+                let opacity = 0.2;
+                let color = 0xaaddff;
                 
                 if (this.config.glassType === 'frosted') {
-                    opacity = 0.6;
+                    opacity = 0.7;
                     color = 0xf0f0f0;
-                    roughness = 0.8;
                 } else if (this.config.glassType === 'tinted') {
-                    opacity = 0.4;
+                    opacity = 0.5;
                     color = 0x88aa88;
-                    roughness = 0.1;
                 }
                 
-                return new THREE.MeshPhysicalMaterial({
+                return new THREE.MeshBasicMaterial({
                     color: color,
                     transparent: true,
                     opacity: opacity,
-                    roughness: roughness,
-                    metalness: 0,
-                    transmission: this.config.glassType === 'frosted' ? 0.3 : 0.8,
-                    thickness: 0.5,
                     side: THREE.DoubleSide
                 });
             }
