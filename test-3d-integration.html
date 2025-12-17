@@ -309,7 +309,7 @@
             createBackground() {
                 // Load sky/landscape image - will be positioned behind glass only
                 const loader = new THREE.TextureLoader();
-                loader.load('img/tlo1.jpg', 
+                loader.load('./img/tlo1.jpg', 
                     (texture) => {
                         console.log('✅ Tło załadowane!');
                         this.skyTexture = texture;
