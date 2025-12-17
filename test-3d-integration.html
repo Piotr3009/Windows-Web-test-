@@ -307,19 +307,35 @@
             }
             
             createBackground() {
-                // Load sky/landscape image using standard Image
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.onload = () => {
-                    console.log('✅ Tło załadowane!');
-                    this.skyTexture = new THREE.Texture(img);
-                    this.skyTexture.needsUpdate = true;
+                // Load both backgrounds
+                this.backgrounds = {
+                    external: null,  // tlo1.jpg - niebo (widok od środka)
+                    internal: null   // internal1.jpg - pokój (widok z zewnątrz)
+                };
+                
+                // Load sky (seen when looking from inside)
+                const imgSky = new Image();
+                imgSky.crossOrigin = 'anonymous';
+                imgSky.onload = () => {
+                    console.log('✅ Tło niebo załadowane!');
+                    this.backgrounds.external = new THREE.Texture(imgSky);
+                    this.backgrounds.external.needsUpdate = true;
                     this.updateSkyPlane();
                 };
-                img.onerror = (e) => {
-                    console.error('❌ Błąd ładowania tła:', e);
+                imgSky.src = './img/tlo1.jpg';
+                
+                // Load interior (seen when looking from outside)
+                const imgRoom = new Image();
+                imgRoom.crossOrigin = 'anonymous';
+                imgRoom.onload = () => {
+                    console.log('✅ Tło wnętrze załadowane!');
+                    this.backgrounds.internal = new THREE.Texture(imgRoom);
+                    this.backgrounds.internal.needsUpdate = true;
                 };
-                img.src = './img/tlo1.jpg';
+                imgRoom.src = './img/internal1.jpg';
+                
+                // Track current view
+                this.currentView = 'external'; // patrzymy z zewnątrz
             }
             
             updateSkyPlane() {
@@ -328,17 +344,38 @@
                     this.scene.remove(this.skyPlane);
                 }
                 
-                if (!this.skyTexture) return;
+                // Get current texture based on view direction
+                const texture = this.currentView === 'external' 
+                    ? this.backgrounds.internal  // z zewnątrz widzimy pokój
+                    : this.backgrounds.external; // od środka widzimy niebo
+                
+                if (!texture) return;
                 
                 // Sky size - larger than window, positioned far behind
                 const w = this.config.width * this.SCALE;
                 const h = this.config.height * this.SCALE;
                 
                 const skyGeom = new THREE.PlaneGeometry(w * 1.5, h * 1.5);
-                const skyMat = new THREE.MeshBasicMaterial({ map: this.skyTexture });
+                const skyMat = new THREE.MeshBasicMaterial({ map: texture });
                 this.skyPlane = new THREE.Mesh(skyGeom, skyMat);
                 this.skyPlane.position.z = -0.5; // Far behind window
                 this.scene.add(this.skyPlane);
+            }
+            
+            checkViewDirection(rotationY) {
+                // Normalize rotation to -PI to PI
+                const normalizedRot = ((rotationY % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+                
+                // If rotation > 90° or < -90° (looking from inside)
+                const newView = (normalizedRot > Math.PI / 2 && normalizedRot < Math.PI * 1.5) 
+                    ? 'internal' 
+                    : 'external';
+                
+                if (newView !== this.currentView) {
+                    this.currentView = newView;
+                    console.log('👁️ Zmiana widoku:', newView === 'external' ? 'z zewnątrz' : 'od środka');
+                    this.updateSkyPlane();
+                }
             }
             
             loadBackground() {
@@ -527,6 +564,9 @@
                     
                     this.windowGroup.rotation.y = rotY;
                     this.windowGroup.rotation.x = rotX;
+                    
+                    // Check if view direction changed (external/internal)
+                    this.checkViewDirection(rotY);
                     
                     prevX = e.clientX;
                     prevY = e.clientY;
