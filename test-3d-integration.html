@@ -341,7 +341,11 @@
             updateSkyPlane() {
                 // Remove old sky plane if exists
                 if (this.skyPlane) {
-                    this.scene.remove(this.skyPlane);
+                    if (this.windowGroup) {
+                        this.windowGroup.remove(this.skyPlane);
+                    } else {
+                        this.scene.remove(this.skyPlane);
+                    }
                 }
                 
                 // Get current texture based on view direction
@@ -364,7 +368,13 @@
                 const skyMat = new THREE.MeshBasicMaterial({ map: texture });
                 this.skyPlane = new THREE.Mesh(skyGeom, skyMat);
                 this.skyPlane.position.z = -0.15; // Just behind glass
-                this.scene.add(this.skyPlane);
+                
+                // Add to windowGroup so it rotates with window
+                if (this.windowGroup) {
+                    this.windowGroup.add(this.skyPlane);
+                } else {
+                    this.scene.add(this.skyPlane);
+                }
             }
             
             checkViewDirection(rotationY) {
