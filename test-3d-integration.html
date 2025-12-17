@@ -313,9 +313,6 @@
                     this.skyTexture = texture;
                     this.updateSkyPlane();
                 });
-                
-                // Brick wall around window
-                this.createBrickWall();
             }
             
             updateSkyPlane() {
@@ -335,115 +332,6 @@
                 this.skyPlane = new THREE.Mesh(skyGeom, skyMat);
                 this.skyPlane.position.z = -0.25; // Behind window frame
                 this.scene.add(this.skyPlane);
-            }
-            
-            createBrickWall() {
-                // Create brick texture procedurally (for now - can replace with photo later)
-                const canvas = document.createElement('canvas');
-                canvas.width = 256;
-                canvas.height = 256;
-                const ctx = canvas.getContext('2d');
-                
-                // Base mortar color
-                ctx.fillStyle = '#A09080';
-                ctx.fillRect(0, 0, 256, 256);
-                
-                // Brick colors - more realistic variation
-                const brickColors = ['#8B4513', '#A0522D', '#CD853F', '#8B5A2B', '#A52A2A', '#7B3F00', '#6B4423'];
-                
-                const brickWidth = 40;
-                const brickHeight = 20;
-                const mortarGap = 3;
-                
-                for (let row = 0; row < 13; row++) {
-                    const offset = (row % 2) * (brickWidth / 2);
-                    for (let col = -1; col < 8; col++) {
-                        const x = col * brickWidth + offset;
-                        const y = row * brickHeight;
-                        
-                        // Random brick color with variation
-                        const baseColor = brickColors[Math.floor(Math.random() * brickColors.length)];
-                        ctx.fillStyle = baseColor;
-                        ctx.fillRect(
-                            x + mortarGap, 
-                            y + mortarGap, 
-                            brickWidth - mortarGap * 2, 
-                            brickHeight - mortarGap * 2
-                        );
-                        
-                        // Add subtle texture/shading
-                        ctx.fillStyle = 'rgba(0,0,0,0.15)';
-                        ctx.fillRect(x + mortarGap, y + mortarGap + brickHeight - 6, brickWidth - mortarGap * 2, 3);
-                        ctx.fillStyle = 'rgba(255,255,255,0.1)';
-                        ctx.fillRect(x + mortarGap, y + mortarGap, brickWidth - mortarGap * 2, 2);
-                    }
-                }
-                
-                this.brickTexture = new THREE.CanvasTexture(canvas);
-                this.brickTexture.wrapS = THREE.RepeatWrapping;
-                this.brickTexture.wrapT = THREE.RepeatWrapping;
-                this.brickTexture.repeat.set(3, 3);
-                
-                this.brickMaterial = new THREE.MeshStandardMaterial({ 
-                    map: this.brickTexture,
-                    roughness: 0.85
-                });
-                
-                this.updateBrickWall();
-            }
-            
-            updateBrickWall() {
-                // Remove old wall pieces
-                if (this.wallPieces) {
-                    this.wallPieces.forEach(piece => this.scene.remove(piece));
-                }
-                this.wallPieces = [];
-                
-                if (!this.brickMaterial) return;
-                
-                // Wall with hole for window
-                const wallWidth = 3.5;
-                const wallHeight = 3;
-                const windowHoleW = this.config.width * this.SCALE + 0.08;
-                const windowHoleH = this.config.height * this.SCALE + 0.08;
-                
-                // Top piece
-                const topH = (wallHeight - windowHoleH) / 2;
-                if (topH > 0) {
-                    const topGeom = new THREE.BoxGeometry(wallWidth, topH, 0.12);
-                    const topWall = new THREE.Mesh(topGeom, this.brickMaterial);
-                    topWall.position.set(0, windowHoleH/2 + topH/2, -0.2);
-                    this.scene.add(topWall);
-                    this.wallPieces.push(topWall);
-                }
-                
-                // Bottom piece
-                if (topH > 0) {
-                    const bottomGeom = new THREE.BoxGeometry(wallWidth, topH, 0.12);
-                    const bottomWall = new THREE.Mesh(bottomGeom, this.brickMaterial);
-                    bottomWall.position.set(0, -windowHoleH/2 - topH/2, -0.2);
-                    this.scene.add(bottomWall);
-                    this.wallPieces.push(bottomWall);
-                }
-                
-                // Left piece
-                const sideW = (wallWidth - windowHoleW) / 2;
-                if (sideW > 0) {
-                    const leftGeom = new THREE.BoxGeometry(sideW, windowHoleH, 0.12);
-                    const leftWall = new THREE.Mesh(leftGeom, this.brickMaterial);
-                    leftWall.position.set(-windowHoleW/2 - sideW/2, 0, -0.2);
-                    this.scene.add(leftWall);
-                    this.wallPieces.push(leftWall);
-                }
-                
-                // Right piece
-                if (sideW > 0) {
-                    const rightGeom = new THREE.BoxGeometry(sideW, windowHoleH, 0.12);
-                    const rightWall = new THREE.Mesh(rightGeom, this.brickMaterial);
-                    rightWall.position.set(windowHoleW/2 + sideW/2, 0, -0.2);
-                    this.scene.add(rightWall);
-                    this.wallPieces.push(rightWall);
-                }
             }
             
             loadBackground() {
@@ -659,10 +547,9 @@
                 Object.assign(this.config, newConfig);
                 this.createWindow();
                 
-                // Update background elements if size changed
+                // Update background if size changed
                 if (sizeChanged) {
                     this.updateSkyPlane();
-                    this.updateBrickWall();
                 }
             }
             
