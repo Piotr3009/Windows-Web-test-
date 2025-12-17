@@ -367,7 +367,7 @@
                 const skyGeom = new THREE.PlaneGeometry(glassW, glassH);
                 const skyMat = new THREE.MeshBasicMaterial({ map: texture });
                 this.skyPlane = new THREE.Mesh(skyGeom, skyMat);
-                this.skyPlane.position.z = -0.15; // Just behind glass
+                this.skyPlane.position.z = 0; // Exactly where glass would be
                 
                 // Add to windowGroup so it rotates with window
                 if (this.windowGroup) {
@@ -443,14 +443,14 @@
             
             createGlassMaterial() {
                 let opacity = 0.2;
-                let color = 0xaaddff;
+                let color = 0xffffff;
                 
                 if (this.config.glassType === 'frosted') {
-                    opacity = 0.7;
-                    color = 0xf0f0f0;
+                    opacity = 0.85;
+                    color = 0xf8f8f8;
                 } else if (this.config.glassType === 'tinted') {
-                    opacity = 0.5;
-                    color = 0x88aa88;
+                    opacity = 0.4;
+                    color = 0x556655;
                 }
                 
                 return new THREE.MeshBasicMaterial({
@@ -495,16 +495,18 @@
                 // Bottom
                 this.addSashPiece(sash, sashMaterial, w, t, d, 0, -h/2 + t/2, 0);
                 
-                // Glass
-                const glassWidth = w - t * 2;
-                const glassHeight = h - t * 2;
-                const glassGeom = new THREE.BoxGeometry(glassWidth, glassHeight, this.GLASS_THICKNESS * this.SCALE);
-                const glass = new THREE.Mesh(glassGeom, this.glassMaterial);
-                sash.add(glass);
+                // Glass - only add if frosted or tinted (clear = no glass overlay)
+                if (this.config.glassType !== 'clear') {
+                    const glassWidth = w - t * 2;
+                    const glassHeight = h - t * 2;
+                    const glassGeom = new THREE.BoxGeometry(glassWidth, glassHeight, this.GLASS_THICKNESS * this.SCALE);
+                    const glass = new THREE.Mesh(glassGeom, this.glassMaterial);
+                    sash.add(glass);
+                }
                 
                 // Glazing bars
                 const barPattern = sashType === 'upper' ? this.config.upperBars : this.config.lowerBars;
-                this.addGlazingBars(sash, sashMaterial, glassWidth, glassHeight, barPattern);
+                this.addGlazingBars(sash, sashMaterial, w - t * 2, h - t * 2, barPattern);
                 
                 return sash;
             }
