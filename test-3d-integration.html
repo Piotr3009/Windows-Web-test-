@@ -346,24 +346,16 @@
             }
             
             updateSkyPlane() {
-                // Remove old sky plane if exists
-                if (this.skyPlane) {
-                    if (this.windowGroup) {
-                        this.windowGroup.remove(this.skyPlane);
-                    } else {
-                        this.scene.remove(this.skyPlane);
-                    }
+                // Remove old sky planes if exist
+                if (this.skyPlaneFront) {
+                    this.windowGroup?.remove(this.skyPlaneFront);
+                }
+                if (this.skyPlaneBack) {
+                    this.windowGroup?.remove(this.skyPlaneBack);
                 }
                 
-                // Get current texture based on view direction
-                const texture = this.currentView === 'external' 
-                    ? this.backgrounds.internal  // z zewnątrz widzimy pokój
-                    : this.backgrounds.external; // od środka widzimy niebo
-                
-                console.log('🖼️ updateSkyPlane - widok:', this.currentView, 'tekstura:', texture ? 'OK' : 'BRAK');
-                
-                if (!texture) {
-                    console.warn('⚠️ Brak tekstury dla widoku:', this.currentView);
+                if (!this.backgrounds.internal || !this.backgrounds.external) {
+                    console.warn('⚠️ Nie wszystkie tekstury załadowane');
                     return;
                 }
                 
@@ -376,33 +368,35 @@
                 const glassW = w - t * 2.5;
                 const glassH = h - t * 2.5;
                 
-                const skyGeom = new THREE.PlaneGeometry(glassW, glassH);
-                const skyMat = new THREE.MeshBasicMaterial({ map: texture });
-                this.skyPlane = new THREE.Mesh(skyGeom, skyMat);
-                this.skyPlane.position.z = -0.05; // Behind the sashes
+                // Front plane (interior - seen from outside)
+                const frontGeom = new THREE.PlaneGeometry(glassW, glassH);
+                const frontMat = new THREE.MeshBasicMaterial({ 
+                    map: this.backgrounds.internal,
+                    side: THREE.FrontSide
+                });
+                this.skyPlaneFront = new THREE.Mesh(frontGeom, frontMat);
+                this.skyPlaneFront.position.z = 0.01;
                 
-                // Add to windowGroup so it rotates with window
+                // Back plane (sky - seen from inside)
+                const backGeom = new THREE.PlaneGeometry(glassW, glassH);
+                const backMat = new THREE.MeshBasicMaterial({ 
+                    map: this.backgrounds.external,
+                    side: THREE.BackSide
+                });
+                this.skyPlaneBack = new THREE.Mesh(backGeom, backMat);
+                this.skyPlaneBack.position.z = -0.01;
+                
+                // Add to windowGroup
                 if (this.windowGroup) {
-                    this.windowGroup.add(this.skyPlane);
-                } else {
-                    this.scene.add(this.skyPlane);
+                    this.windowGroup.add(this.skyPlaneFront);
+                    this.windowGroup.add(this.skyPlaneBack);
                 }
+                
+                console.log('🖼️ Oba plany tła dodane');
             }
             
             checkViewDirection(rotationY) {
-                // Normalize rotation to -PI to PI
-                const normalizedRot = ((rotationY % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-                
-                // If rotation > 90° or < -90° (looking from inside)
-                const newView = (normalizedRot > Math.PI / 2 && normalizedRot < Math.PI * 1.5) 
-                    ? 'internal' 
-                    : 'external';
-                
-                if (newView !== this.currentView) {
-                    this.currentView = newView;
-                    console.log('👁️ Zmiana widoku:', newView === 'external' ? 'z zewnątrz' : 'od środka');
-                    this.updateSkyPlane();
-                }
+                // Not needed anymore - both sides always visible
             }
             
             loadBackground() {
