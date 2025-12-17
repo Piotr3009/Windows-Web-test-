@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Window Integration Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Raleway', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #1a3a2a;
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 30px;
+        }
+        .controls {
+            width: 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .preview-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+        .view-container {
+            width: 100%;
+            max-width: 600px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .view-container h3 {
+            text-align: center;
+            color: #1a3a2a;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        .window-3d {
+            width: 100%;
+            aspect-ratio: 3/4;
+            border: 2px solid #c9a227;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        .control-group {
+            margin-bottom: 20px;
+        }
+        .control-group label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .control-group select,
+        .control-group input[type="range"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .control-group input[type="range"] {
+            padding: 0;
+        }
+        .value-display {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .color-options {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .color-option {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        .color-option.selected {
+            border-color: #c9a227;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a3a2a;
+            border-bottom: 2px solid #c9a227;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .checkbox-group input {
+            width: 18px;
+            height: 18px;
+        }
+        .info-box {
+            background: #e8f5e9;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            color: #2e7d32;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🪟 3D Sash Window - Integration Test</h1>
+    
+    <div class="container">
+        <div class="controls">
+            <div class="section-title">Dimensions</div>
+            
+            <div class="control-group">
+                <label>Width (mm)</label>
+                <input type="range" id="windowWidth" min="400" max="1500" value="800">
+                <div class="value-display" id="widthValue">800 mm</div>
+            </div>
+            
+            <div class="control-group">
+                <label>Height (mm)</label>
+                <input type="range" id="windowHeight" min="600" max="2000" value="1200">
+                <div class="value-display" id="heightValue">1200 mm</div>
+            </div>
+            
+            <div class="section-title">Frame Color</div>
+            <div class="control-group">
+                <div class="color-options">
+                    <div class="color-option selected" style="background: #FAFAFA;" data-color="white" title="Pure White"></div>
+                    <div class="color-option" style="background: #F1EFDC;" data-color="cream" title="Cream"></div>
+                    <div class="color-option" style="background: #D2B48C;" data-color="oak" title="Light Oak"></div>
+                    <div class="color-option" style="background: #8B4513;" data-color="darkoak" title="Dark Oak"></div>
+                    <div class="color-option" style="background: #2F4F4F;" data-color="green" title="Heritage Green"></div>
+                    <div class="color-option" style="background: #1a1a1a;" data-color="black" title="Black"></div>
+                </div>
+            </div>
+            
+            <div class="section-title">Glazing Bars</div>
+            
+            <div class="control-group">
+                <label>Upper Sash</label>
+                <select id="upperBars">
+                    <option value="none">No Bars</option>
+                    <option value="2x2">2×2 Pattern</option>
+                    <option value="3x3">3×3 Pattern</option>
+                    <option value="4x4">4×4 Pattern</option>
+                    <option value="6x6">6×6 Pattern</option>
+                    <option value="9x9">9×9 Pattern</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>Lower Sash</label>
+                <select id="lowerBars">
+                    <option value="none">No Bars</option>
+                    <option value="2x2">2×2 Pattern</option>
+                    <option value="3x3">3×3 Pattern</option>
+                    <option value="4x4">4×4 Pattern</option>
+                    <option value="6x6">6×6 Pattern</option>
+                    <option value="9x9">9×9 Pattern</option>
+                </select>
+            </div>
+            
+            <div class="control-group checkbox-group">
+                <input type="checkbox" id="sameBars" checked>
+                <label for="sameBars" style="margin: 0;">Same for both sashes</label>
+            </div>
+            
+            <div class="section-title">Glass</div>
+            
+            <div class="control-group">
+                <label>Glass Type</label>
+                <select id="glassType">
+                    <option value="clear">Clear</option>
+                    <option value="frosted">Frosted</option>
+                    <option value="tinted">Tinted</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label>Sash Position (open)</label>
+                <input type="range" id="sashPosition" min="0" max="50" value="0">
+                <div class="value-display" id="sashValue">Closed</div>
+            </div>
+            
+            <div class="info-box">
+                🖱️ Drag to rotate view<br>
+                🔍 Scroll to zoom
+            </div>
+        </div>
+        
+        <div class="preview-area">
+            <div class="view-container">
+                <div class="window-3d" id="window-3d"></div>
+                <h3>3D Window Preview</h3>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // ============================================
+        // 3D SASH WINDOW - INTEGRATION TEST
+        // ============================================
+
+        class Window3DViewer {
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                
+                // Config
+                this.config = {
+                    width: 800,
+                    height: 1200,
+                    frameColor: '#FAFAFA',
+                    upperBars: 'none',
+                    lowerBars: 'none',
+                    glassType: 'clear',
+                    sashPosition: 0
+                };
+                
+                // Scale factor (mm to Three.js units)
+                this.SCALE = 0.001;
+                
+                // Frame dimensions
+                this.FRAME_DEPTH = 90;
+                this.FRAME_THICKNESS = 55;
+                this.GLASS_THICKNESS = 24;
+                this.BAR_THICKNESS = 18;
+                
+                this.init();
+            }
+            
+            init() {
+                const rect = this.container.getBoundingClientRect();
+                
+                // Scene
+                this.scene = new THREE.Scene();
+                this.scene.background = new THREE.Color(0xE8E8E8); // Light gray background
+                
+                // Camera
+                this.camera = new THREE.PerspectiveCamera(35, rect.width / rect.height, 0.1, 100);
+                this.camera.position.set(0, 0, 3.5);
+                
+                // Renderer
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                this.renderer.setSize(rect.width, rect.height);
+                this.renderer.shadowMap.enabled = true;
+                this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                this.container.appendChild(this.renderer.domElement);
+                
+                // Lighting
+                this.setupLighting();
+                
+                // Background (sky + brick wall)
+                this.createBackground();
+                
+                // Window model
+                this.createWindow();
+                
+                // Controls
+                this.setupControls();
+                
+                // Start render loop
+                this.animate();
+                
+                // Handle resize
+                window.addEventListener('resize', () => this.onResize());
+            }
+            
+            setupLighting() {
+                const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+                this.scene.add(ambient);
+                
+                const directional = new THREE.DirectionalLight(0xffffff, 0.8);
+                directional.position.set(5, 10, 7);
+                directional.castShadow = true;
+                this.scene.add(directional);
+                
+                const backLight = new THREE.DirectionalLight(0xffffff, 0.3);
+                backLight.position.set(-3, 5, -5);
+                this.scene.add(backLight);
+            }
+            
+            createBackground() {
+                // Load sky/landscape image
+                const loader = new THREE.TextureLoader();
+                loader.load('img/tlo do okien 3d.jpg', (texture) => {
+                    // Sky plane behind window
+                    const skyGeom = new THREE.PlaneGeometry(8, 5);
+                    const skyMat = new THREE.MeshBasicMaterial({ map: texture });
+                    this.skyPlane = new THREE.Mesh(skyGeom, skyMat);
+                    this.skyPlane.position.z = -0.4;
+                    this.scene.add(this.skyPlane);
+                });
+                
+                // Brick wall around window
+                this.createBrickWall();
+            }
+            
+            createBrickWall() {
+                // Create brick texture procedurally (for now - can replace with photo later)
+                const canvas = document.createElement('canvas');
+                canvas.width = 256;
+                canvas.height = 256;
+                const ctx = canvas.getContext('2d');
+                
+                // Base mortar color
+                ctx.fillStyle = '#A09080';
+                ctx.fillRect(0, 0, 256, 256);
+                
+                // Brick colors - more realistic variation
+                const brickColors = ['#8B4513', '#A0522D', '#CD853F', '#8B5A2B', '#A52A2A', '#7B3F00', '#6B4423'];
+                
+                const brickWidth = 40;
+                const brickHeight = 20;
+                const mortarGap = 3;
+                
+                for (let row = 0; row < 13; row++) {
+                    const offset = (row % 2) * (brickWidth / 2);
+                    for (let col = -1; col < 8; col++) {
+                        const x = col * brickWidth + offset;
+                        const y = row * brickHeight;
+                        
+                        // Random brick color with variation
+                        const baseColor = brickColors[Math.floor(Math.random() * brickColors.length)];
+                        ctx.fillStyle = baseColor;
+                        ctx.fillRect(
+                            x + mortarGap, 
+                            y + mortarGap, 
+                            brickWidth - mortarGap * 2, 
+                            brickHeight - mortarGap * 2
+                        );
+                        
+                        // Add subtle texture/shading
+                        ctx.fillStyle = 'rgba(0,0,0,0.15)';
+                        ctx.fillRect(x + mortarGap, y + mortarGap + brickHeight - 6, brickWidth - mortarGap * 2, 3);
+                        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                        ctx.fillRect(x + mortarGap, y + mortarGap, brickWidth - mortarGap * 2, 2);
+                    }
+                }
+                
+                const brickTexture = new THREE.CanvasTexture(canvas);
+                brickTexture.wrapS = THREE.RepeatWrapping;
+                brickTexture.wrapT = THREE.RepeatWrapping;
+                brickTexture.repeat.set(3, 3);
+                
+                const brickMat = new THREE.MeshStandardMaterial({ 
+                    map: brickTexture,
+                    roughness: 0.85
+                });
+                
+                // Wall with hole for window
+                const wallWidth = 3.5;
+                const wallHeight = 3;
+                const windowHoleW = this.config.width * this.SCALE + 0.08;
+                const windowHoleH = this.config.height * this.SCALE + 0.08;
+                
+                // Store wall references for updates
+                this.wallPieces = [];
+                
+                // Top piece
+                const topH = (wallHeight - windowHoleH) / 2;
+                const topGeom = new THREE.BoxGeometry(wallWidth, topH, 0.12);
+                const topWall = new THREE.Mesh(topGeom, brickMat);
+                topWall.position.set(0, windowHoleH/2 + topH/2, -0.2);
+                this.scene.add(topWall);
+                this.wallPieces.push(topWall);
+                
+                // Bottom piece
+                const bottomGeom = new THREE.BoxGeometry(wallWidth, topH, 0.12);
+                const bottomWall = new THREE.Mesh(bottomGeom, brickMat);
+                bottomWall.position.set(0, -windowHoleH/2 - topH/2, -0.2);
+                this.scene.add(bottomWall);
+                this.wallPieces.push(bottomWall);
+                
+                // Left piece
+                const sideW = (wallWidth - windowHoleW) / 2;
+                const leftGeom = new THREE.BoxGeometry(sideW, windowHoleH, 0.12);
+                const leftWall = new THREE.Mesh(leftGeom, brickMat);
+                leftWall.position.set(-windowHoleW/2 - sideW/2, 0, -0.2);
+                this.scene.add(leftWall);
+                this.wallPieces.push(leftWall);
+                
+                // Right piece
+                const rightGeom = new THREE.BoxGeometry(sideW, windowHoleH, 0.12);
+                const rightWall = new THREE.Mesh(rightGeom, brickMat);
+                rightWall.position.set(windowHoleW/2 + sideW/2, 0, -0.2);
+                this.scene.add(rightWall);
+                this.wallPieces.push(rightWall);
+            }
+            
+            loadBackground() {
+                // Now handled by createBackground()
+            }
+            
+            createWindow() {
+                // Remove old window
+                if (this.windowGroup) {
+                    this.scene.remove(this.windowGroup);
+                }
+                
+                this.windowGroup = new THREE.Group();
+                
+                const w = this.config.width * this.SCALE;
+                const h = this.config.height * this.SCALE;
+                const d = this.FRAME_DEPTH * this.SCALE;
+                const t = this.FRAME_THICKNESS * this.SCALE;
+                
+                // Materials
+                this.frameMaterial = new THREE.MeshStandardMaterial({
+                    color: new THREE.Color(this.config.frameColor),
+                    roughness: 0.4,
+                    metalness: 0.1
+                });
+                
+                this.glassMaterial = this.createGlassMaterial();
+                
+                // Outer frame
+                this.createOuterFrame(w, h, d, t);
+                
+                // Sashes
+                const sashHeight = (h - t) / 2;
+                const openOffset = (this.config.sashPosition / 100) * sashHeight * 0.8;
+                
+                // Bottom sash (in front)
+                this.bottomSash = this.createSash(w - t * 2, sashHeight, d * 0.6, t * 0.7, 'lower');
+                this.bottomSash.position.y = -sashHeight / 2;
+                this.bottomSash.position.z = d * 0.15;
+                this.windowGroup.add(this.bottomSash);
+                
+                // Top sash (movable, behind)
+                this.topSash = this.createSash(w - t * 2, sashHeight, d * 0.6, t * 0.7, 'upper');
+                this.topSash.position.y = sashHeight / 2 - openOffset;
+                this.topSash.position.z = -d * 0.15;
+                this.windowGroup.add(this.topSash);
+                
+                this.scene.add(this.windowGroup);
+            }
+            
+            createGlassMaterial() {
+                let opacity = 0.15;
+                let color = 0x88ccff;
+                let roughness = 0.05;
+                
+                if (this.config.glassType === 'frosted') {
+                    opacity = 0.6;
+                    color = 0xf0f0f0;
+                    roughness = 0.8;
+                } else if (this.config.glassType === 'tinted') {
+                    opacity = 0.4;
+                    color = 0x88aa88;
+                    roughness = 0.1;
+                }
+                
+                return new THREE.MeshPhysicalMaterial({
+                    color: color,
+                    transparent: true,
+                    opacity: opacity,
+                    roughness: roughness,
+                    metalness: 0,
+                    transmission: this.config.glassType === 'frosted' ? 0.3 : 0.8,
+                    thickness: 0.5,
+                    side: THREE.DoubleSide
+                });
+            }
+            
+            createOuterFrame(w, h, d, t) {
+                // Left
+                this.addFramePiece(t, h, d, -w/2 + t/2, 0, 0);
+                // Right
+                this.addFramePiece(t, h, d, w/2 - t/2, 0, 0);
+                // Top
+                this.addFramePiece(w, t, d, 0, h/2 - t/2, 0);
+                // Bottom (sill)
+                this.addFramePiece(w + t * 0.5, t * 1.2, d * 1.2, 0, -h/2 - t * 0.1, d * 0.1);
+            }
+            
+            addFramePiece(width, height, depth, x, y, z) {
+                const geometry = new THREE.BoxGeometry(width, height, depth);
+                const mesh = new THREE.Mesh(geometry, this.frameMaterial);
+                mesh.position.set(x, y, z);
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                this.windowGroup.add(mesh);
+            }
+            
+            createSash(w, h, d, t, sashType) {
+                const sash = new THREE.Group();
+                const sashMaterial = this.frameMaterial.clone();
+                
+                // Frame pieces
+                // Left
+                this.addSashPiece(sash, sashMaterial, t, h, d, -w/2 + t/2, 0, 0);
+                // Right
+                this.addSashPiece(sash, sashMaterial, t, h, d, w/2 - t/2, 0, 0);
+                // Top
+                this.addSashPiece(sash, sashMaterial, w, t, d, 0, h/2 - t/2, 0);
+                // Bottom
+                this.addSashPiece(sash, sashMaterial, w, t, d, 0, -h/2 + t/2, 0);
+                
+                // Glass
+                const glassWidth = w - t * 2;
+                const glassHeight = h - t * 2;
+                const glassGeom = new THREE.BoxGeometry(glassWidth, glassHeight, this.GLASS_THICKNESS * this.SCALE);
+                const glass = new THREE.Mesh(glassGeom, this.glassMaterial);
+                sash.add(glass);
+                
+                // Glazing bars
+                const barPattern = sashType === 'upper' ? this.config.upperBars : this.config.lowerBars;
+                this.addGlazingBars(sash, sashMaterial, glassWidth, glassHeight, barPattern);
+                
+                return sash;
+            }
+            
+            addSashPiece(sash, material, width, height, depth, x, y, z) {
+                const geometry = new THREE.BoxGeometry(width, height, depth);
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(x, y, z);
+                mesh.castShadow = true;
+                sash.add(mesh);
+            }
+            
+            addGlazingBars(sash, material, glassWidth, glassHeight, pattern) {
+                if (pattern === 'none') return;
+                
+                const barThickness = this.BAR_THICKNESS * this.SCALE;
+                const barDepth = this.GLASS_THICKNESS * this.SCALE * 1.5;
+                
+                // Pattern definitions
+                const patterns = {
+                    '2x2': { h: 0, v: 1 },
+                    '3x3': { h: 0, v: 2 },
+                    '4x4': { h: 1, v: 1 },
+                    '6x6': { h: 1, v: 2 },
+                    '9x9': { h: 2, v: 2 }
+                };
+                
+                const divisions = patterns[pattern];
+                if (!divisions) return;
+                
+                // Horizontal bars
+                for (let i = 1; i <= divisions.h; i++) {
+                    const y = (glassHeight / (divisions.h + 1)) * i - glassHeight / 2;
+                    const barGeom = new THREE.BoxGeometry(glassWidth, barThickness, barDepth);
+                    const bar = new THREE.Mesh(barGeom, material);
+                    bar.position.y = y;
+                    bar.position.z = barDepth / 2;
+                    sash.add(bar);
+                }
+                
+                // Vertical bars
+                for (let i = 1; i <= divisions.v; i++) {
+                    const x = (glassWidth / (divisions.v + 1)) * i - glassWidth / 2;
+                    const barGeom = new THREE.BoxGeometry(barThickness, glassHeight, barDepth);
+                    const bar = new THREE.Mesh(barGeom, material);
+                    bar.position.x = x;
+                    bar.position.z = barDepth / 2;
+                    sash.add(bar);
+                }
+            }
+            
+            setupControls() {
+                let isDragging = false;
+                let prevX = 0, prevY = 0;
+                let rotX = 0, rotY = 0;
+                
+                this.renderer.domElement.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    prevX = e.clientX;
+                    prevY = e.clientY;
+                });
+                
+                this.renderer.domElement.addEventListener('mousemove', (e) => {
+                    if (!isDragging || !this.windowGroup) return;
+                    
+                    const deltaX = e.clientX - prevX;
+                    const deltaY = e.clientY - prevY;
+                    
+                    rotY += deltaX * 0.005;
+                    rotX += deltaY * 0.005;
+                    rotX = Math.max(-0.5, Math.min(0.5, rotX));
+                    
+                    this.windowGroup.rotation.y = rotY;
+                    this.windowGroup.rotation.x = rotX;
+                    
+                    prevX = e.clientX;
+                    prevY = e.clientY;
+                });
+                
+                this.renderer.domElement.addEventListener('mouseup', () => isDragging = false);
+                this.renderer.domElement.addEventListener('mouseleave', () => isDragging = false);
+                
+                this.renderer.domElement.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    this.camera.position.z += e.deltaY * 0.003;
+                    this.camera.position.z = Math.max(2, Math.min(6, this.camera.position.z));
+                });
+            }
+            
+            updateConfig(newConfig) {
+                Object.assign(this.config, newConfig);
+                this.createWindow();
+            }
+            
+            onResize() {
+                const rect = this.container.getBoundingClientRect();
+                this.camera.aspect = rect.width / rect.height;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(rect.width, rect.height);
+            }
+            
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                this.renderer.render(this.scene, this.camera);
+            }
+        }
+
+        // ============================================
+        // INITIALIZE VIEWER
+        // ============================================
+        
+        let windowViewer;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            // Create single viewer
+            windowViewer = new Window3DViewer('window-3d');
+            
+            // Setup controls
+            setupControlListeners();
+        });
+        
+        function setupControlListeners() {
+            // Width
+            document.getElementById('windowWidth').addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                document.getElementById('widthValue').textContent = value + ' mm';
+                windowViewer.updateConfig({ width: value });
+            });
+            
+            // Height
+            document.getElementById('windowHeight').addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                document.getElementById('heightValue').textContent = value + ' mm';
+                windowViewer.updateConfig({ height: value });
+            });
+            
+            // Frame color
+            document.querySelectorAll('.color-option').forEach(opt => {
+                opt.addEventListener('click', (e) => {
+                    document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+                    e.target.classList.add('selected');
+                    
+                    const colors = {
+                        'white': '#FAFAFA',
+                        'cream': '#F1EFDC',
+                        'oak': '#D2B48C',
+                        'darkoak': '#8B4513',
+                        'green': '#2F4F4F',
+                        'black': '#1a1a1a'
+                    };
+                    
+                    const color = colors[e.target.dataset.color];
+                    windowViewer.updateConfig({ frameColor: color });
+                });
+            });
+            
+            // Upper bars
+            document.getElementById('upperBars').addEventListener('change', (e) => {
+                const pattern = e.target.value;
+                windowViewer.updateConfig({ upperBars: pattern });
+                
+                if (document.getElementById('sameBars').checked) {
+                    document.getElementById('lowerBars').value = pattern;
+                    windowViewer.updateConfig({ lowerBars: pattern });
+                }
+            });
+            
+            // Lower bars
+            document.getElementById('lowerBars').addEventListener('change', (e) => {
+                windowViewer.updateConfig({ lowerBars: e.target.value });
+            });
+            
+            // Same bars checkbox
+            document.getElementById('sameBars').addEventListener('change', (e) => {
+                document.getElementById('lowerBars').disabled = e.target.checked;
+                if (e.target.checked) {
+                    const upperPattern = document.getElementById('upperBars').value;
+                    document.getElementById('lowerBars').value = upperPattern;
+                    windowViewer.updateConfig({ lowerBars: upperPattern });
+                }
+            });
+            
+            // Glass type
+            document.getElementById('glassType').addEventListener('change', (e) => {
+                windowViewer.updateConfig({ glassType: e.target.value });
+            });
+            
+            // Sash position
+            document.getElementById('sashPosition').addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                document.getElementById('sashValue').textContent = value === 0 ? 'Closed' : value + '% open';
+                windowViewer.updateConfig({ sashPosition: value });
+            });
+            
+            // Initial state
+            document.getElementById('lowerBars').disabled = true;
+        }
+    </script>
+</body>
+</html>
