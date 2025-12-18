@@ -246,11 +246,17 @@
                 // Scale factor (mm to Three.js units)
                 this.SCALE = 0.001;
                 
-                // Frame dimensions
-                this.FRAME_DEPTH = 164;
-                this.FRAME_THICKNESS = 100;
+                // Frame dimensions (from technical drawings)
+                this.FRAME_DEPTH = 164;      // Box głębokość
+                this.FRAME_THICKNESS = 102;  // Box szerokość
+                this.SASH_THICKNESS = 42;    // Sash szerokość widoczna
+                this.SASH_DEPTH = 57;        // Sash głębokość
+                this.MEETING_RAIL = 44;      // Meeting rail wysokość
                 this.GLASS_THICKNESS = 24;
                 this.BAR_THICKNESS = 18;
+                this.HORNS_LENGTH = 90;      // Tylko górna sash
+                this.CILL_HEIGHT = 69;       // Parapet wysokość
+                this.CILL_SLOPE = 27;        // Parapet spadek
                 
                 this.init();
             }
@@ -425,26 +431,48 @@
                 
                 this.glassMaterial = this.createGlassMaterial();
                 
-                // Outer frame
+                // Outer frame (box)
                 this.createOuterFrame(w, h, d, t);
                 
-                // Sashes
+                // Cill (parapet)
+                this.createCill(w, d);
+                
+                // Sash dimensions
+                const sashT = this.SASH_THICKNESS * this.SCALE;
+                const sashD = this.SASH_DEPTH * this.SCALE;
                 const sashHeight = (h - t) / 2;
                 const openOffset = (this.config.sashPosition / 100) * sashHeight * 0.8;
                 
-                // Bottom sash (in front)
-                this.bottomSash = this.createSash(w - t * 2, sashHeight, d * 0.6, t * 0.7, 'lower');
+                // Bottom sash - bliżej wnętrza (z ujemne - dalej od zewnątrz)
+                this.bottomSash = this.createSash(w - t * 2, sashHeight, sashD, sashT, 'lower');
                 this.bottomSash.position.y = -sashHeight / 2;
-                this.bottomSash.position.z = d * 0.15;
+                this.bottomSash.position.z = -d * 0.2;  // bliżej wnętrza
                 this.windowGroup.add(this.bottomSash);
                 
-                // Top sash (movable, behind)
-                this.topSash = this.createSash(w - t * 2, sashHeight, d * 0.6, t * 0.7, 'upper');
+                // Top sash - bliżej zewnątrz (z dodatnie - bliżej zewnątrz) + horns
+                this.topSash = this.createSash(w - t * 2, sashHeight, sashD, sashT, 'upper');
                 this.topSash.position.y = sashHeight / 2 - openOffset;
-                this.topSash.position.z = -d * 0.15;
+                this.topSash.position.z = d * 0.2;  // bliżej zewnątrz
                 this.windowGroup.add(this.topSash);
                 
                 this.scene.add(this.windowGroup);
+            }
+            
+            createCill(w, d) {
+                const cillH = this.CILL_HEIGHT * this.SCALE;
+                const cillSlope = this.CILL_SLOPE * this.SCALE;
+                const cillDepth = d * 1.2; // wystaje trochę
+                const cillWidth = w * 1.05;
+                
+                // Prosty parapet (można później dodać nachylenie)
+                const cillGeom = new THREE.BoxGeometry(cillWidth, cillH, cillDepth);
+                const cill = new THREE.Mesh(cillGeom, this.frameMaterial);
+                
+                const h = this.config.height * this.SCALE;
+                cill.position.y = -h / 2 - cillH / 2;
+                cill.position.z = d * 0.1; // lekko do przodu
+                
+                this.windowGroup.add(cill);
             }
             
             createGlassMaterial() {
@@ -500,6 +528,16 @@
                 this.addSashPiece(sash, sashMaterial, w, t, d, 0, h/2 - t/2, 0);
                 // Bottom
                 this.addSashPiece(sash, sashMaterial, w, t, d, 0, -h/2 + t/2, 0);
+                
+                // Horns - tylko górna sash, wystają w dół po bokach
+                if (sashType === 'upper') {
+                    const hornsLength = this.HORNS_LENGTH * this.SCALE;
+                    // Horns wystają poniżej dolnej krawędzi sashki
+                    // Left horn
+                    this.addSashPiece(sash, sashMaterial, t, hornsLength, d, -w/2 + t/2, -h/2 - hornsLength/2, 0);
+                    // Right horn
+                    this.addSashPiece(sash, sashMaterial, t, hornsLength, d, w/2 - t/2, -h/2 - hornsLength/2, 0);
+                }
                 
                 // Glass - only add if frosted or tinted (clear = no glass overlay)
                 if (this.config.glassType !== 'clear') {
