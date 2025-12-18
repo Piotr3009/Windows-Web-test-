@@ -3,573 +3,1147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Window Integration Test</title>
+    <title>Professional 3D Sash Window - Skylon Timber & Glazing</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+        
         body {
-            font-family: 'Raleway', Arial, sans-serif;
-            background: #f5f5f5;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-            color: #1a3a2a;
-            margin-bottom: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            gap: 30px;
-        }
-        .controls {
-            width: 300px;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .preview-area {
-            flex: 1;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a3a2a 0%, #2d5a3d 100%);
+            min-height: 100vh;
             display: flex;
             justify-content: center;
-        }
-        .view-container {
-            width: 100%;
-            max-width: 600px;
-            background: white;
-            border-radius: 10px;
+            align-items: flex-start;
             padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .view-container h3 {
-            text-align: center;
-            color: #1a3a2a;
-            margin-bottom: 10px;
-            font-style: italic;
-        }
-        .window-3d {
+        
+        .container {
+            display: flex;
+            gap: 30px;
+            max-width: 1400px;
             width: 100%;
-            aspect-ratio: 3/4;
-            border: 2px solid #c9a227;
-            border-radius: 5px;
-            overflow: hidden;
         }
-        .control-group {
+        
+        .controls-panel {
+            width: 320px;
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .controls-panel h2 {
+            color: #1a3a2a;
             margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #c9a227;
+            font-size: 1.3em;
         }
+        
+        .section-title {
+            font-weight: bold;
+            color: #1a3a2a;
+            margin: 20px 0 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #ddd;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .control-group {
+            margin-bottom: 15px;
+        }
+        
         .control-group label {
             display: block;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 0.9em;
         }
-        .control-group select,
+        
         .control-group input[type="range"] {
+            width: 100%;
+            margin-bottom: 5px;
+            accent-color: #1a3a2a;
+        }
+        
+        .control-group select {
             width: 100%;
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 5px;
+            font-size: 0.9em;
         }
-        .control-group input[type="range"] {
-            padding: 0;
-        }
+        
         .value-display {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
+            text-align: right;
+            font-size: 0.85em;
+            color: #1a3a2a;
+            font-weight: bold;
         }
+        
         .color-options {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
         }
+        
         .color-option {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
             cursor: pointer;
             border: 3px solid transparent;
             transition: all 0.2s;
         }
+        
         .color-option:hover {
             transform: scale(1.1);
         }
+        
         .color-option.selected {
             border-color: #c9a227;
+            box-shadow: 0 0 10px rgba(201, 162, 39, 0.5);
         }
-        .section-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #1a3a2a;
-            border-bottom: 2px solid #c9a227;
-            padding-bottom: 5px;
-            margin-bottom: 15px;
-        }
+        
         .checkbox-group {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
+            margin: 10px 0;
         }
+        
         .checkbox-group input {
             width: 18px;
             height: 18px;
+            accent-color: #1a3a2a;
         }
-        .info-box {
-            background: #e8f5e9;
+        
+        .preview-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .view-container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .view-container h3 {
+            text-align: center;
+            color: #1a3a2a;
+            margin-bottom: 15px;
+            font-style: italic;
+            font-size: 1.1em;
+        }
+        
+        .window-3d {
+            width: 100%;
+            aspect-ratio: 4/5;
+            border: 3px solid #c9a227;
+            border-radius: 10px;
+            overflow: hidden;
+            background: linear-gradient(180deg, #e8e8e8 0%, #f5f5f5 100%);
+        }
+        
+        .info-panel {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f8f8;
+            border-radius: 8px;
+            font-size: 0.85em;
+        }
+        
+        .info-panel h4 {
+            color: #1a3a2a;
+            margin-bottom: 10px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .toggle-btn {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background: #1a3a2a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: background 0.2s;
+        }
+        
+        .toggle-btn:hover {
+            background: #2d5a3d;
+        }
+        
+        .view-modes {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .view-mode-btn {
+            flex: 1;
             padding: 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            color: #2e7d32;
-            margin-top: 20px;
+            border: 2px solid #1a3a2a;
+            background: white;
+            color: #1a3a2a;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.2s;
+        }
+        
+        .view-mode-btn.active {
+            background: #1a3a2a;
+            color: white;
+        }
+        
+        .view-mode-btn:hover:not(.active) {
+            background: #f0f0f0;
         }
     </style>
 </head>
 <body>
-    <h1>🪟 3D Sash Window - Integration Test</h1>
-    
     <div class="container">
-        <div class="controls">
-            <div class="section-title">Dimensions</div>
+        <!-- Controls Panel -->
+        <div class="controls-panel">
+            <h2>🪟 Window Configuration</h2>
             
+            <div class="section-title">Dimensions</div>
             <div class="control-group">
                 <label>Width (mm)</label>
-                <input type="range" id="windowWidth" min="400" max="1500" value="1000">
+                <input type="range" id="windowWidth" min="400" max="1800" value="1000" step="10">
                 <div class="value-display" id="widthValue">1000 mm</div>
             </div>
             
             <div class="control-group">
                 <label>Height (mm)</label>
-                <input type="range" id="windowHeight" min="600" max="2000" value="1000">
-                <div class="value-display" id="heightValue">1000 mm</div>
+                <input type="range" id="windowHeight" min="600" max="2400" value="1400" step="10">
+                <div class="value-display" id="heightValue">1400 mm</div>
             </div>
             
-            <div class="section-title">Frame Color</div>
+            <div class="section-title">Frame Style</div>
             <div class="control-group">
+                <label>Frame Color</label>
                 <div class="color-options">
-                    <div class="color-option selected" style="background: #FAFAFA;" data-color="white" title="Pure White"></div>
-                    <div class="color-option" style="background: #F1EFDC;" data-color="cream" title="Cream"></div>
-                    <div class="color-option" style="background: #D2B48C;" data-color="oak" title="Light Oak"></div>
-                    <div class="color-option" style="background: #8B4513;" data-color="darkoak" title="Dark Oak"></div>
-                    <div class="color-option" style="background: #2F4F4F;" data-color="green" title="Heritage Green"></div>
-                    <div class="color-option" style="background: #1a1a1a;" data-color="black" title="Black"></div>
+                    <div class="color-option selected" data-color="white" style="background: #FAFAFA;" title="White"></div>
+                    <div class="color-option" data-color="cream" style="background: #F5F5DC;" title="Cream"></div>
+                    <div class="color-option" data-color="oak" style="background: #D2691E;" title="Light Oak"></div>
+                    <div class="color-option" data-color="darkoak" style="background: #8B4513;" title="Dark Oak"></div>
+                    <div class="color-option" data-color="mahogany" style="background: #6B1C23;" title="Mahogany"></div>
+                    <div class="color-option" data-color="green" style="background: #2F4F4F;" title="Heritage Green"></div>
+                    <div class="color-option" data-color="black" style="background: #1a1a1a;" title="Black"></div>
+                    <div class="color-option" data-color="grey" style="background: #708090;" title="Slate Grey"></div>
                 </div>
             </div>
             
-            <div class="section-title">Glazing Bars</div>
-            
             <div class="control-group">
-                <label>Upper Sash</label>
+                <label>Profile Style</label>
+                <select id="profileStyle">
+                    <option value="ovolo">Ovolo (Traditional)</option>
+                    <option value="lambs-tongue">Lamb's Tongue</option>
+                    <option value="ogee">Ogee</option>
+                    <option value="square">Square (Modern)</option>
+                </select>
+            </div>
+            
+            <div class="section-title">Glazing Bars</div>
+            <div class="control-group">
+                <label>Upper Sash Pattern</label>
                 <select id="upperBars">
                     <option value="none">No Bars</option>
-                    <option value="2x2">2×2 Pattern</option>
-                    <option value="3x3">3×3 Pattern</option>
-                    <option value="4x4">4×4 Pattern</option>
-                    <option value="6x6">6×6 Pattern</option>
-                    <option value="9x9">9×9 Pattern</option>
+                    <option value="2x2">2x2 (1 vertical)</option>
+                    <option value="3x3">3x3 (2 vertical)</option>
+                    <option value="4x4">4x4 (1h + 1v)</option>
+                    <option value="6x6">6x6 (1h + 2v)</option>
+                    <option value="9x9">9x9 (2h + 2v)</option>
+                </select>
+            </div>
+            
+            <div class="checkbox-group">
+                <input type="checkbox" id="sameBars" checked>
+                <label for="sameBars">Same pattern for both sashes</label>
+            </div>
+            
+            <div class="control-group">
+                <label>Lower Sash Pattern</label>
+                <select id="lowerBars" disabled>
+                    <option value="none">No Bars</option>
+                    <option value="2x2">2x2 (1 vertical)</option>
+                    <option value="3x3">3x3 (2 vertical)</option>
+                    <option value="4x4">4x4 (1h + 1v)</option>
+                    <option value="6x6">6x6 (1h + 2v)</option>
+                    <option value="9x9">9x9 (2h + 2v)</option>
                 </select>
             </div>
             
             <div class="control-group">
-                <label>Lower Sash</label>
-                <select id="lowerBars">
-                    <option value="none">No Bars</option>
-                    <option value="2x2">2×2 Pattern</option>
-                    <option value="3x3">3×3 Pattern</option>
-                    <option value="4x4">4×4 Pattern</option>
-                    <option value="6x6">6×6 Pattern</option>
-                    <option value="9x9">9×9 Pattern</option>
+                <label>Bar Width</label>
+                <select id="barWidth">
+                    <option value="18">18mm (Standard)</option>
+                    <option value="22">22mm (Traditional)</option>
+                    <option value="25">25mm (Heritage)</option>
                 </select>
             </div>
             
-            <div class="control-group checkbox-group">
-                <input type="checkbox" id="sameBars" checked>
-                <label for="sameBars" style="margin: 0;">Same for both sashes</label>
-            </div>
-            
-            <div class="section-title">Glass</div>
-            
+            <div class="section-title">Glass Options</div>
             <div class="control-group">
                 <label>Glass Type</label>
                 <select id="glassType">
                     <option value="clear">Clear</option>
-                    <option value="frosted">Frosted</option>
+                    <option value="frosted">Frosted/Obscure</option>
                     <option value="tinted">Tinted</option>
+                    <option value="lowE">Low-E (Energy)</option>
                 </select>
             </div>
             
             <div class="control-group">
-                <label>Sash Position (open)</label>
+                <label>Glass Thickness</label>
+                <select id="glassThickness">
+                    <option value="12">12mm</option>
+                    <option value="14">14mm</option>
+                    <option value="16">16mm</option>
+                    <option value="20">20mm</option>
+                    <option value="24" selected>24mm (Standard DG)</option>
+                    <option value="28">28mm (Triple)</option>
+                </select>
+            </div>
+            
+            <div class="section-title">Hardware & Options</div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="showHorns" checked>
+                <label for="showHorns">Show Horns (Traditional)</label>
+            </div>
+            
+            <div class="control-group">
+                <label>Cill Extension</label>
+                <select id="cillExtension">
+                    <option value="0">No Extension</option>
+                    <option value="35">35mm</option>
+                    <option value="60">60mm</option>
+                    <option value="85">85mm</option>
+                </select>
+            </div>
+            
+            <div class="section-title">Animation</div>
+            <div class="control-group">
+                <label>Sash Position</label>
                 <input type="range" id="sashPosition" min="0" max="50" value="0">
                 <div class="value-display" id="sashValue">Closed</div>
             </div>
             
-            <div class="info-box">
-                🖱️ Drag to rotate view<br>
-                🔍 Scroll to zoom
-            </div>
+            <button class="toggle-btn" id="toggleSection">Toggle Cross-Section View</button>
+            <button class="toggle-btn" id="resetView">Reset Camera View</button>
         </div>
         
+        <!-- Preview Area -->
         <div class="preview-area">
             <div class="view-container">
+                <div class="view-modes">
+                    <button class="view-mode-btn active" data-view="exterior">Exterior View</button>
+                    <button class="view-mode-btn" data-view="interior">Interior View</button>
+                    <button class="view-mode-btn" data-view="section">Section View</button>
+                </div>
                 <div class="window-3d" id="window-3d"></div>
-                <h3>3D Window Preview</h3>
+                <h3>Professional 3D Sash Window Preview</h3>
+            </div>
+            
+            <div class="info-panel">
+                <h4>📐 Technical Specifications</h4>
+                <div class="info-row">
+                    <span>Box Frame:</span>
+                    <span>102mm × 164mm</span>
+                </div>
+                <div class="info-row">
+                    <span>Sash Profile:</span>
+                    <span>42mm × 57mm</span>
+                </div>
+                <div class="info-row">
+                    <span>Meeting Rail:</span>
+                    <span>44mm (interlocking)</span>
+                </div>
+                <div class="info-row">
+                    <span>Glazing:</span>
+                    <span id="glazingInfo">24mm DGU</span>
+                </div>
+                <div class="info-row">
+                    <span>Document Q:</span>
+                    <span>PAS24 Compliant</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // ============================================
-        // 3D SASH WINDOW - INTEGRATION TEST
-        // ============================================
+        // ================================================================================
+        // PROFESSIONAL 3D SASH WINDOW VIEWER
+        // Skylon Timber & Glazing - Technical Accurate Model
+        // Based on OTD Technical Drawings - Document Q Design
+        // ================================================================================
 
-        class Window3DViewer {
+        class ProfessionalWindowViewer {
             constructor(containerId) {
                 this.container = document.getElementById(containerId);
+                if (!this.container) {
+                    console.error('Container not found:', containerId);
+                    return;
+                }
+
+                // ============================================================
+                // CONFIGURATION - All dimensions in millimeters
+                // ============================================================
                 
-                // Config
                 this.config = {
                     width: 1000,
-                    height: 1000,
+                    height: 1400,
                     frameColor: '#FAFAFA',
+                    profileStyle: 'ovolo',
                     upperBars: 'none',
                     lowerBars: 'none',
+                    barWidth: 18,
                     glassType: 'clear',
-                    sashPosition: 0
+                    glassThickness: 24,
+                    showHorns: true,
+                    cillExtension: 0,
+                    sashPosition: 0,
+                    showSection: false,
+                    viewMode: 'exterior'
                 };
+
+                // ============================================================
+                // TECHNICAL DIMENSIONS (from OTD drawings - all in mm)
+                // ============================================================
                 
-                // Scale factor (mm to Three.js units)
+                this.dim = {
+                    // Box Frame
+                    boxWidth: 102,
+                    boxDepth: 164,
+                    boxInnerOffset: 17,
+                    boxOuterSection: 85,
+                    pulleyStile: 45,
+                    
+                    // Sash
+                    sashWidth: 42,
+                    sashDepth: 57,
+                    sashRailHeight: 44,
+                    
+                    // Meeting Rail
+                    meetingRailHeight: 44,
+                    meetingRailOverlap: 10,
+                    
+                    // Glass
+                    glassThickness: 24,
+                    glassSetback: 24,
+                    glassRebate: 12,
+                    
+                    // Glazing Bars
+                    barWidth: 18,
+                    barDepth: 24,
+                    
+                    // Cill
+                    cillHeight: 69,
+                    cillSlope: 27,
+                    cillNose: 15,
+                    cillThroating: 10,
+                    
+                    // Head
+                    headHeight: 86,
+                    
+                    // Horns
+                    hornsLength: 90,
+                    
+                    // Beads
+                    glazingBeadWidth: 17,
+                    glazingBeadHeight: 17,
+                    partingBeadWidth: 8,
+                    partingBeadDepth: 25,
+                    staffBeadWidth: 20,
+                    staffBeadDepth: 15,
+                    
+                    // Seals
+                    sealWidth: 5,
+                    sealDepth: 10
+                };
+
                 this.SCALE = 0.001;
-                
-                // Frame dimensions (from technical drawings)
-                this.FRAME_DEPTH = 164;      // Box głębokość
-                this.FRAME_THICKNESS = 102;  // Box szerokość
-                this.SASH_THICKNESS = 42;    // Sash szerokość widoczna
-                this.SASH_DEPTH = 57;        // Sash głębokość
-                this.MEETING_RAIL = 44;      // Meeting rail wysokość
-                this.GLASS_THICKNESS = 24;
-                this.BAR_THICKNESS = 18;
-                this.HORNS_LENGTH = 90;      // Tylko górna sash
-                this.CILL_HEIGHT = 69;       // Parapet wysokość
-                this.CILL_SLOPE = 27;        // Parapet spadek
-                
                 this.init();
             }
-            
+
             init() {
                 const rect = this.container.getBoundingClientRect();
                 
                 // Scene
                 this.scene = new THREE.Scene();
-                this.scene.background = new THREE.Color(0xE8E8E8); // Light gray background
-                
+                this.scene.background = new THREE.Color(0xE8E8E8);
+
                 // Camera
-                this.camera = new THREE.PerspectiveCamera(35, rect.width / rect.height, 0.1, 100);
-                this.camera.position.set(0, 0, 3.5);
-                
+                this.camera = new THREE.PerspectiveCamera(40, rect.width / rect.height, 0.01, 100);
+                this.camera.position.set(0, 0, 2.5);
+
                 // Renderer
                 this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
                 this.renderer.setSize(rect.width, rect.height);
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
                 this.renderer.shadowMap.enabled = true;
                 this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
                 this.container.appendChild(this.renderer.domElement);
-                
-                // Lighting
+
                 this.setupLighting();
-                
-                // Background (sky + brick wall)
-                this.createBackground();
-                
-                // Window model
-                this.createWindow();
-                
-                // Controls
+                this.createMaterials();
+                this.loadBackgrounds();
+                this.buildWindow();
                 this.setupControls();
-                
-                // Start render loop
                 this.animate();
-                
-                // Handle resize
-                window.addEventListener('resize', () => this.onResize());
+
+                window.addEventListener('resize', () => this.handleResize());
             }
-            
+
             setupLighting() {
-                const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+                // Ambient
+                const ambient = new THREE.AmbientLight(0xffffff, 0.5);
                 this.scene.add(ambient);
-                
-                const directional = new THREE.DirectionalLight(0xffffff, 0.8);
-                directional.position.set(5, 10, 7);
-                directional.castShadow = true;
-                this.scene.add(directional);
-                
-                const backLight = new THREE.DirectionalLight(0xffffff, 0.3);
-                backLight.position.set(-3, 5, -5);
+
+                // Main light
+                const mainLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                mainLight.position.set(5, 10, 7);
+                mainLight.castShadow = true;
+                mainLight.shadow.mapSize.width = 2048;
+                mainLight.shadow.mapSize.height = 2048;
+                this.scene.add(mainLight);
+
+                // Fill light
+                const fillLight = new THREE.DirectionalLight(0xffffff, 0.3);
+                fillLight.position.set(-5, 5, 3);
+                this.scene.add(fillLight);
+
+                // Back light
+                const backLight = new THREE.DirectionalLight(0xffffff, 0.2);
+                backLight.position.set(0, 5, -5);
                 this.scene.add(backLight);
+
+                // Hemisphere
+                const hemiLight = new THREE.HemisphereLight(0x87CEEB, 0x362f2f, 0.3);
+                this.scene.add(hemiLight);
             }
-            
-            createBackground() {
-                // Load both backgrounds
-                this.backgrounds = {
-                    external: null,  // tlo1.jpg - niebo (widok od środka)
-                    internal: null   // internal1.jpg - pokój (widok z zewnątrz)
-                };
-                
-                // Load sky (seen when looking from inside)
-                const imgSky = new Image();
-                imgSky.crossOrigin = 'anonymous';
-                imgSky.onload = () => {
-                    console.log('✅ Tło NIEBO załadowane!');
-                    this.backgrounds.external = new THREE.Texture(imgSky);
-                    this.backgrounds.external.needsUpdate = true;
-                };
-                imgSky.onerror = (e) => {
-                    console.error('❌ Błąd ładowania NIEBA (tlo1.jpg):', e);
-                };
-                imgSky.src = './img/tlo1.jpg';
-                
-                // Load interior (seen when looking from outside)
-                const imgRoom = new Image();
-                imgRoom.crossOrigin = 'anonymous';
-                imgRoom.onload = () => {
-                    console.log('✅ Tło WNĘTRZE załadowane!');
-                    this.backgrounds.internal = new THREE.Texture(imgRoom);
-                    this.backgrounds.internal.needsUpdate = true;
-                    // Update sky plane when first background loads
-                    this.updateSkyPlane();
-                };
-                imgRoom.onerror = (e) => {
-                    console.error('❌ Błąd ładowania WNĘTRZA (internal1.jpg):', e);
-                };
-                imgRoom.src = './img/internal1.jpg';
-                
-                // Track current view
-                this.currentView = 'external'; // patrzymy z zewnątrz
-            }
-            
-            updateSkyPlane() {
-                // Remove old sky planes if exist
-                if (this.skyPlaneFront) {
-                    this.windowGroup?.remove(this.skyPlaneFront);
-                }
-                if (this.skyPlaneBack) {
-                    this.windowGroup?.remove(this.skyPlaneBack);
-                }
-                
-                if (!this.backgrounds.internal || !this.backgrounds.external) {
-                    console.warn('⚠️ Nie wszystkie tekstury załadowane');
-                    return;
-                }
-                
-                // Calculate glass area (inside frame)
-                const w = this.config.width * this.SCALE;
-                const h = this.config.height * this.SCALE;
-                const t = this.FRAME_THICKNESS * this.SCALE;
-                
-                // Glass size (smaller than window - inside the frame)
-                const glassW = w - t * 2.5;
-                const glassH = h - t * 2.5;
-                
-                // Front plane (interior - seen from outside)
-                const frontGeom = new THREE.PlaneGeometry(glassW, glassH);
-                const frontMat = new THREE.MeshBasicMaterial({ 
-                    map: this.backgrounds.internal,
-                    side: THREE.FrontSide
-                });
-                this.skyPlaneFront = new THREE.Mesh(frontGeom, frontMat);
-                this.skyPlaneFront.position.z = 0.01;
-                
-                // Back plane (sky - seen from inside)
-                const backGeom = new THREE.PlaneGeometry(glassW, glassH);
-                const backMat = new THREE.MeshBasicMaterial({ 
-                    map: this.backgrounds.external,
-                    side: THREE.BackSide
-                });
-                this.skyPlaneBack = new THREE.Mesh(backGeom, backMat);
-                this.skyPlaneBack.position.z = -0.01;
-                
-                // Add to windowGroup
-                if (this.windowGroup) {
-                    this.windowGroup.add(this.skyPlaneFront);
-                    this.windowGroup.add(this.skyPlaneBack);
-                }
-                
-                console.log('🖼️ Oba plany tła dodane');
-            }
-            
-            checkViewDirection(rotationY) {
-                // Not needed anymore - both sides always visible
-            }
-            
-            loadBackground() {
-                // Now handled by createBackground()
-            }
-            
-            createWindow() {
-                // Remove old window
-                if (this.windowGroup) {
-                    this.scene.remove(this.windowGroup);
-                }
-                
-                this.windowGroup = new THREE.Group();
-                
-                const w = this.config.width * this.SCALE;
-                const h = this.config.height * this.SCALE;
-                const d = this.FRAME_DEPTH * this.SCALE;
-                const t = this.FRAME_THICKNESS * this.SCALE;
-                
-                // Materials
+
+            createMaterials() {
                 this.frameMaterial = new THREE.MeshStandardMaterial({
                     color: new THREE.Color(this.config.frameColor),
-                    roughness: 0.4,
-                    metalness: 0.1
+                    roughness: 0.35,
+                    metalness: 0.0
                 });
-                
+
                 this.glassMaterial = this.createGlassMaterial();
-                
-                // Outer frame (box)
-                this.createOuterFrame(w, h, d, t);
-                
-                // Cill (parapet)
-                this.createCill(w, d);
-                
-                // Sash dimensions
-                const sashT = this.SASH_THICKNESS * this.SCALE;
-                const sashD = this.SASH_DEPTH * this.SCALE;
-                const sashHeight = (h - t) / 2;
-                const openOffset = (this.config.sashPosition / 100) * sashHeight * 0.8;
-                
-                // Bottom sash - bliżej wnętrza (z ujemne - dalej od zewnątrz)
-                this.bottomSash = this.createSash(w - t * 2, sashHeight, sashD, sashT, 'lower');
-                this.bottomSash.position.y = -sashHeight / 2;
-                this.bottomSash.position.z = -d * 0.2;  // bliżej wnętrza
-                this.windowGroup.add(this.bottomSash);
-                
-                // Top sash - bliżej zewnątrz (z dodatnie - bliżej zewnątrz) + horns
-                this.topSash = this.createSash(w - t * 2, sashHeight, sashD, sashT, 'upper');
-                this.topSash.position.y = sashHeight / 2 - openOffset;
-                this.topSash.position.z = d * 0.2;  // bliżej zewnątrz
-                this.windowGroup.add(this.topSash);
-                
-                this.scene.add(this.windowGroup);
+
+                this.sealMaterial = new THREE.MeshStandardMaterial({
+                    color: 0x1a1a1a,
+                    roughness: 0.9,
+                    metalness: 0.0
+                });
             }
-            
-            createCill(w, d) {
-                const cillH = this.CILL_HEIGHT * this.SCALE;
-                const cillSlope = this.CILL_SLOPE * this.SCALE;
-                const cillDepth = d * 1.2; // wystaje trochę
-                const cillWidth = w * 1.05;
-                
-                // Prosty parapet (można później dodać nachylenie)
-                const cillGeom = new THREE.BoxGeometry(cillWidth, cillH, cillDepth);
-                const cill = new THREE.Mesh(cillGeom, this.frameMaterial);
-                
-                const h = this.config.height * this.SCALE;
-                cill.position.y = -h / 2 - cillH / 2;
-                cill.position.z = d * 0.1; // lekko do przodu
-                
-                this.windowGroup.add(cill);
-            }
-            
+
             createGlassMaterial() {
-                let opacity = 0.2;
-                let color = 0xffffff;
-                
-                if (this.config.glassType === 'frosted') {
-                    opacity = 0.85;
-                    color = 0xf8f8f8;
-                } else if (this.config.glassType === 'tinted') {
-                    opacity = 0.4;
-                    color = 0x556655;
+                let opacity, color;
+                switch (this.config.glassType) {
+                    case 'frosted':
+                        opacity = 0.85; color = 0xf8f8f8; break;
+                    case 'tinted':
+                        opacity = 0.4; color = 0x4a6670; break;
+                    case 'lowE':
+                        opacity = 0.15; color = 0xc8e8f8; break;
+                    default:
+                        opacity = 0.1; color = 0xffffff;
                 }
-                
-                return new THREE.MeshBasicMaterial({
+                return new THREE.MeshPhysicalMaterial({
                     color: color,
                     transparent: true,
                     opacity: opacity,
+                    roughness: 0.05,
+                    metalness: 0,
+                    transmission: 0.9,
+                    thickness: 0.5,
                     side: THREE.DoubleSide
                 });
             }
-            
-            createOuterFrame(w, h, d, t) {
-                // Left
-                this.addFramePiece(t, h, d, -w/2 + t/2, 0, 0);
-                // Right
-                this.addFramePiece(t, h, d, w/2 - t/2, 0, 0);
-                // Top
-                this.addFramePiece(w, t, d, 0, h/2 - t/2, 0);
-                // Bottom (sill)
-                this.addFramePiece(w + t * 0.5, t * 1.2, d * 1.2, 0, -h/2 - t * 0.1, d * 0.1);
+
+            loadBackgrounds() {
+                this.backgrounds = { exterior: null, interior: null };
+
+                const imgExt = new Image();
+                imgExt.crossOrigin = 'anonymous';
+                imgExt.onload = () => {
+                    this.backgrounds.exterior = new THREE.Texture(imgExt);
+                    this.backgrounds.exterior.needsUpdate = true;
+                    this.updateBackgroundPlanes();
+                };
+                imgExt.src = './img/tlo1.jpg';
+
+                const imgInt = new Image();
+                imgInt.crossOrigin = 'anonymous';
+                imgInt.onload = () => {
+                    this.backgrounds.interior = new THREE.Texture(imgInt);
+                    this.backgrounds.interior.needsUpdate = true;
+                    this.updateBackgroundPlanes();
+                };
+                imgInt.src = './img/internal1.jpg';
             }
-            
-            addFramePiece(width, height, depth, x, y, z) {
-                const geometry = new THREE.BoxGeometry(width, height, depth);
-                const mesh = new THREE.Mesh(geometry, this.frameMaterial);
-                mesh.position.set(x, y, z);
-                mesh.castShadow = true;
-                mesh.receiveShadow = true;
-                this.windowGroup.add(mesh);
+
+            updateBackgroundPlanes() {
+                if (this.bgPlaneFront) this.windowGroup?.remove(this.bgPlaneFront);
+                if (this.bgPlaneBack) this.windowGroup?.remove(this.bgPlaneBack);
+                if (!this.windowGroup) return;
+
+                const w = this.config.width * this.SCALE;
+                const h = this.config.height * this.SCALE;
+                const boxW = this.dim.boxWidth * this.SCALE;
+                const glassW = w - boxW * 2.2;
+                const glassH = h - boxW * 2.2;
+
+                if (this.backgrounds.interior) {
+                    const frontGeom = new THREE.PlaneGeometry(glassW, glassH);
+                    const frontMat = new THREE.MeshBasicMaterial({ map: this.backgrounds.interior, side: THREE.FrontSide });
+                    this.bgPlaneFront = new THREE.Mesh(frontGeom, frontMat);
+                    this.bgPlaneFront.position.z = 0.001;
+                    this.windowGroup.add(this.bgPlaneFront);
+                }
+
+                if (this.backgrounds.exterior) {
+                    const backGeom = new THREE.PlaneGeometry(glassW, glassH);
+                    const backMat = new THREE.MeshBasicMaterial({ map: this.backgrounds.exterior, side: THREE.BackSide });
+                    this.bgPlaneBack = new THREE.Mesh(backGeom, backMat);
+                    this.bgPlaneBack.position.z = -0.001;
+                    this.windowGroup.add(this.bgPlaneBack);
+                }
             }
-            
-            createSash(w, h, d, t, sashType) {
+
+            // ================================================================
+            // PROFILE CREATION - ExtrudeGeometry for accurate shapes
+            // ================================================================
+
+            createOvoloProfile(width, height, radius = 5) {
+                const shape = new THREE.Shape();
+                const w = width * this.SCALE;
+                const h = height * this.SCALE;
+                const r = radius * this.SCALE;
+
+                shape.moveTo(0, 0);
+                shape.lineTo(w, 0);
+                shape.lineTo(w, h - r);
+                shape.quadraticCurveTo(w, h, w - r, h);
+                shape.lineTo(r, h);
+                shape.quadraticCurveTo(0, h, 0, h - r);
+                shape.lineTo(0, 0);
+
+                return shape;
+            }
+
+            createCillProfile() {
+                const shape = new THREE.Shape();
+                const s = this.SCALE;
+                const h = this.dim.cillHeight * s;
+                const d = (this.dim.boxDepth + this.config.cillExtension) * s;
+                const slope = this.dim.cillSlope * s;
+                const nose = this.dim.cillNose * s;
+                const throat = this.dim.cillThroating * s;
+
+                // Start at front bottom
+                shape.moveTo(0, 0);
+                // Nose projection
+                shape.lineTo(nose, 0);
+                shape.lineTo(nose, h * 0.4);
+                // Top surface with slope
+                shape.lineTo(d + nose, h * 0.4 + slope);
+                shape.lineTo(d + nose, h);
+                // Back
+                shape.lineTo(0, h);
+                // Throating groove
+                shape.lineTo(0, throat);
+                shape.lineTo(throat, throat);
+                shape.lineTo(throat, 0);
+                shape.lineTo(0, 0);
+
+                return shape;
+            }
+
+            createMeetingRailProfile(type) {
+                const shape = new THREE.Shape();
+                const s = this.SCALE;
+                const h = this.dim.meetingRailHeight * s;
+                const d = this.dim.sashDepth * s;
+                const lip = h * 0.35;
+                const lipD = d * 0.4;
+
+                if (type === 'upper') {
+                    // Upper meeting rail - lip at bottom front
+                    shape.moveTo(0, 0);
+                    shape.lineTo(d, 0);
+                    shape.lineTo(d, h);
+                    shape.lineTo(0, h);
+                    shape.lineTo(0, lip);
+                    shape.lineTo(-lipD, lip);
+                    shape.lineTo(-lipD, 0);
+                    shape.lineTo(0, 0);
+                } else {
+                    // Lower meeting rail - lip at top back
+                    shape.moveTo(0, 0);
+                    shape.lineTo(d, 0);
+                    shape.lineTo(d, h - lip);
+                    shape.lineTo(d + lipD, h - lip);
+                    shape.lineTo(d + lipD, h);
+                    shape.lineTo(0, h);
+                    shape.lineTo(0, 0);
+                }
+
+                return shape;
+            }
+
+            createGlazingBarProfile() {
+                const shape = new THREE.Shape();
+                const s = this.SCALE;
+                const w = this.config.barWidth * s;
+                const d = this.dim.barDepth * s;
+                const r = 3 * s; // Ovolo radius
+
+                // Bar with ovolo profile on both sides
+                shape.moveTo(r, 0);
+                shape.lineTo(w - r, 0);
+                shape.quadraticCurveTo(w, 0, w, r);
+                shape.lineTo(w, d - r);
+                shape.quadraticCurveTo(w, d, w - r, d);
+                shape.lineTo(r, d);
+                shape.quadraticCurveTo(0, d, 0, d - r);
+                shape.lineTo(0, r);
+                shape.quadraticCurveTo(0, 0, r, 0);
+
+                return shape;
+            }
+
+            createGlazingBeadProfile() {
+                const shape = new THREE.Shape();
+                const s = this.SCALE;
+                const w = this.dim.glazingBeadWidth * s;
+                const h = this.dim.glazingBeadHeight * s;
+                const r = 4 * s;
+
+                // Ovolo bead profile
+                shape.moveTo(0, 0);
+                shape.lineTo(w - r, 0);
+                shape.quadraticCurveTo(w, 0, w, r);
+                shape.lineTo(w, h - r);
+                shape.quadraticCurveTo(w, h, w - r, h);
+                shape.lineTo(0, h);
+                shape.lineTo(0, 0);
+
+                return shape;
+            }
+
+            // ================================================================
+            // WINDOW CONSTRUCTION
+            // ================================================================
+
+            buildWindow() {
+                if (this.windowGroup) {
+                    this.scene.remove(this.windowGroup);
+                }
+
+                this.windowGroup = new THREE.Group();
+
+                const w = this.config.width * this.SCALE;
+                const h = this.config.height * this.SCALE;
+                const boxW = this.dim.boxWidth * this.SCALE;
+                const boxD = this.dim.boxDepth * this.SCALE;
+
+                this.buildBoxFrame(w, h, boxW, boxD);
+                this.buildCill(w, boxD);
+                this.buildHead(w, h, boxW, boxD);
+                this.buildSashes(w, h, boxW, boxD);
+                this.buildPartingBeads(w, h, boxW, boxD);
+                this.buildStaffBeads(w, h, boxW, boxD);
+                this.updateBackgroundPlanes();
+
+                this.scene.add(this.windowGroup);
+            }
+
+            buildBoxFrame(w, h, boxW, boxD) {
+                const frameGroup = new THREE.Group();
+                frameGroup.name = 'boxFrame';
+
+                // Left jamb with detailed profile
+                this.createDetailedJamb(frameGroup, -w/2, 0, 0, boxW, h, boxD, 'left');
+                
+                // Right jamb
+                this.createDetailedJamb(frameGroup, w/2 - boxW, 0, 0, boxW, h, boxD, 'right');
+
+                this.windowGroup.add(frameGroup);
+            }
+
+            createDetailedJamb(parent, x, y, z, width, height, depth, side) {
+                const s = this.SCALE;
+                
+                // Main jamb body
+                const jambShape = new THREE.Shape();
+                const jw = width;
+                const jd = depth;
+                
+                // Outer rectangle
+                jambShape.moveTo(0, 0);
+                jambShape.lineTo(jw, 0);
+                jambShape.lineTo(jw, jd);
+                jambShape.lineTo(0, jd);
+                jambShape.lineTo(0, 0);
+
+                // Inner pocket (weight pocket)
+                const pocketW = this.dim.pulleyStile * s;
+                const pocketD = (this.dim.boxDepth - 30) * s;
+                const pocketOffset = 20 * s;
+
+                const hole = new THREE.Path();
+                hole.moveTo(pocketOffset, pocketOffset);
+                hole.lineTo(pocketOffset + pocketW, pocketOffset);
+                hole.lineTo(pocketOffset + pocketW, pocketOffset + pocketD);
+                hole.lineTo(pocketOffset, pocketOffset + pocketD);
+                hole.lineTo(pocketOffset, pocketOffset);
+                jambShape.holes.push(hole);
+
+                const extrudeSettings = {
+                    steps: 1,
+                    depth: height,
+                    bevelEnabled: false
+                };
+
+                const jambGeom = new THREE.ExtrudeGeometry(jambShape, extrudeSettings);
+                const jamb = new THREE.Mesh(jambGeom, this.frameMaterial);
+                
+                jamb.rotation.x = -Math.PI / 2;
+                jamb.position.set(x, y + height/2, z - depth/2);
+                jamb.castShadow = true;
+                jamb.receiveShadow = true;
+                parent.add(jamb);
+
+                // Add rebate detail
+                this.addJambRebate(parent, x, y, z, width, height, depth, side);
+                
+                // Add pulley stile covers (decorative circles)
+                this.addPulleyCovers(parent, x, y, z, width, height, depth, side);
+            }
+
+            addJambRebate(parent, x, y, z, width, height, depth, side) {
+                const rebateW = this.dim.boxInnerOffset * this.SCALE;
+                const rebateD = depth * 0.6;
+                const rebateH = height * 0.98;
+
+                const rebateGeom = new THREE.BoxGeometry(rebateW, rebateH, rebateD);
+                const rebate = new THREE.Mesh(rebateGeom, this.frameMaterial);
+
+                if (side === 'left') {
+                    rebate.position.set(x + width + rebateW/2 - 0.001, y, z);
+                } else {
+                    rebate.position.set(x - rebateW/2 + 0.001, y, z);
+                }
+                rebate.castShadow = true;
+                parent.add(rebate);
+            }
+
+            addPulleyCovers(parent, x, y, z, width, height, depth, side) {
+                const circleGeom = new THREE.CircleGeometry(0.015, 32);
+                const circleMat = new THREE.MeshBasicMaterial({ color: 0x333333, side: THREE.DoubleSide });
+
+                // Top cover
+                const topCircle = new THREE.Mesh(circleGeom, circleMat);
+                topCircle.position.set(x + width/2, y + height * 0.35, z + depth/2 + 0.001);
+                parent.add(topCircle);
+
+                // Bottom cover
+                const bottomCircle = topCircle.clone();
+                bottomCircle.position.y = y - height * 0.35;
+                parent.add(bottomCircle);
+            }
+
+            buildCill(w, boxD) {
+                const cillGroup = new THREE.Group();
+                cillGroup.name = 'cill';
+
+                const cillProfile = this.createCillProfile();
+                const cillWidth = w * 1.08;
+
+                const extrudeSettings = {
+                    steps: 1,
+                    depth: cillWidth,
+                    bevelEnabled: true,
+                    bevelThickness: 0.002,
+                    bevelSize: 0.002,
+                    bevelSegments: 2
+                };
+
+                const cillGeom = new THREE.ExtrudeGeometry(cillProfile, extrudeSettings);
+                const cill = new THREE.Mesh(cillGeom, this.frameMaterial);
+
+                const h = this.config.height * this.SCALE;
+                const cillH = this.dim.cillHeight * this.SCALE;
+                
+                cill.rotation.y = Math.PI / 2;
+                cill.position.set(-cillWidth/2, -h/2 - cillH + 0.01, -boxD/2);
+                cill.castShadow = true;
+                cill.receiveShadow = true;
+
+                cillGroup.add(cill);
+                this.windowGroup.add(cillGroup);
+            }
+
+            buildHead(w, h, boxW, boxD) {
+                const headGroup = new THREE.Group();
+                headGroup.name = 'head';
+
+                const headH = this.dim.headHeight * this.SCALE;
+                const headW = w - boxW * 2;
+
+                // Main head piece
+                const headGeom = new THREE.BoxGeometry(headW, headH, boxD);
+                const head = new THREE.Mesh(headGeom, this.frameMaterial);
+                head.position.set(0, h/2 - boxW/2, 0);
+                head.castShadow = true;
+                head.receiveShadow = true;
+                headGroup.add(head);
+
+                // Inner rebate
+                const rebateH = headH * 0.4;
+                const rebateGeom = new THREE.BoxGeometry(headW + 0.01, rebateH, boxD * 0.6);
+                const rebate = new THREE.Mesh(rebateGeom, this.frameMaterial);
+                rebate.position.set(0, h/2 - boxW - rebateH/2, 0);
+                rebate.castShadow = true;
+                headGroup.add(rebate);
+
+                this.windowGroup.add(headGroup);
+            }
+
+            buildSashes(w, h, boxW, boxD) {
+                const sashGroup = new THREE.Group();
+                sashGroup.name = 'sashes';
+
+                const sashW = this.dim.sashWidth * this.SCALE;
+                const sashD = this.dim.sashDepth * this.SCALE;
+                const meetingH = this.dim.meetingRailHeight * this.SCALE;
+                
+                const totalSashHeight = h - boxW * 2;
+                const sashHeight = totalSashHeight / 2 + meetingH / 2;
+                
+                const openOffset = (this.config.sashPosition / 100) * sashHeight * 0.8;
+
+                // Bottom sash (interior position)
+                this.bottomSash = this.createDetailedSash(w - boxW * 2, sashHeight, sashW, sashD, 'lower');
+                this.bottomSash.position.y = -sashHeight/2 + meetingH/2;
+                this.bottomSash.position.z = -boxD * 0.2;
+                sashGroup.add(this.bottomSash);
+
+                // Top sash (exterior position)
+                this.topSash = this.createDetailedSash(w - boxW * 2, sashHeight, sashW, sashD, 'upper');
+                this.topSash.position.y = sashHeight/2 - meetingH/2 - openOffset;
+                this.topSash.position.z = boxD * 0.2;
+                sashGroup.add(this.topSash);
+
+                this.windowGroup.add(sashGroup);
+            }
+
+            createDetailedSash(w, h, stileW, sashD, type) {
                 const sash = new THREE.Group();
-                const sashMaterial = this.frameMaterial.clone();
-                
-                // Frame pieces
-                // Left
-                this.addSashPiece(sash, sashMaterial, t, h, d, -w/2 + t/2, 0, 0);
-                // Right
-                this.addSashPiece(sash, sashMaterial, t, h, d, w/2 - t/2, 0, 0);
-                // Top
-                this.addSashPiece(sash, sashMaterial, w, t, d, 0, h/2 - t/2, 0);
-                // Bottom
-                this.addSashPiece(sash, sashMaterial, w, t, d, 0, -h/2 + t/2, 0);
-                
-                // Horns - tylko górna sash, wystają w dół po bokach
-                if (sashType === 'upper') {
-                    const hornsLength = this.HORNS_LENGTH * this.SCALE;
-                    // Horns wystają poniżej dolnej krawędzi sashki
-                    // Left horn
-                    this.addSashPiece(sash, sashMaterial, t, hornsLength, d, -w/2 + t/2, -h/2 - hornsLength/2, 0);
-                    // Right horn
-                    this.addSashPiece(sash, sashMaterial, t, hornsLength, d, w/2 - t/2, -h/2 - hornsLength/2, 0);
+                sash.name = type + 'Sash';
+
+                const railH = this.dim.sashRailHeight * this.SCALE;
+                const meetingH = this.dim.meetingRailHeight * this.SCALE;
+
+                // Stiles (vertical)
+                this.createExtrudedStile(sash, -w/2, 0, 0, stileW, h, sashD);
+                this.createExtrudedStile(sash, w/2 - stileW, 0, 0, stileW, h, sashD);
+
+                // Top rail
+                this.createExtrudedRail(sash, 0, h/2 - railH/2, 0, w - stileW * 2, railH, sashD);
+
+                // Bottom/meeting rail
+                if (type === 'upper') {
+                    this.createMeetingRailMesh(sash, 0, -h/2 + meetingH/2, 0, w - stileW * 2, meetingH, sashD, 'upper');
+                    if (this.config.showHorns) {
+                        this.createHorns(sash, w, h, stileW, sashD);
+                    }
+                } else {
+                    this.createMeetingRailMesh(sash, 0, h/2 - meetingH/2, 0, w - stileW * 2, meetingH, sashD, 'lower');
+                    this.createExtrudedRail(sash, 0, -h/2 + railH/2, 0, w - stileW * 2, railH, sashD);
                 }
-                
-                // Glass - only add if frosted or tinted (clear = no glass overlay)
-                if (this.config.glassType !== 'clear') {
-                    const glassWidth = w - t * 2;
-                    const glassHeight = h - t * 2;
-                    const glassGeom = new THREE.BoxGeometry(glassWidth, glassHeight, this.GLASS_THICKNESS * this.SCALE);
-                    const glass = new THREE.Mesh(glassGeom, this.glassMaterial);
-                    sash.add(glass);
-                }
-                
+
+                // Glass
+                this.createGlassPane(sash, w, h, stileW, railH, type);
+
                 // Glazing bars
-                const barPattern = sashType === 'upper' ? this.config.upperBars : this.config.lowerBars;
-                this.addGlazingBars(sash, sashMaterial, w - t * 2, h - t * 2, barPattern);
-                
+                const barPattern = type === 'upper' ? this.config.upperBars : this.config.lowerBars;
+                if (barPattern !== 'none') {
+                    this.createGlazingBars(sash, w, h, stileW, railH, barPattern);
+                }
+
+                // Glazing beads
+                this.createGlazingBeads(sash, w, h, stileW, railH);
+
                 return sash;
             }
-            
-            addSashPiece(sash, material, width, height, depth, x, y, z) {
-                const geometry = new THREE.BoxGeometry(width, height, depth);
-                const mesh = new THREE.Mesh(geometry, material);
-                mesh.position.set(x, y, z);
-                mesh.castShadow = true;
-                sash.add(mesh);
+
+            createExtrudedStile(parent, x, y, z, width, height, depth) {
+                const profile = this.createOvoloProfile(width / this.SCALE, depth / this.SCALE, 4);
+                
+                const extrudeSettings = {
+                    steps: 1,
+                    depth: height,
+                    bevelEnabled: false
+                };
+
+                const stileGeom = new THREE.ExtrudeGeometry(profile, extrudeSettings);
+                const stile = new THREE.Mesh(stileGeom, this.frameMaterial);
+                
+                stile.rotation.x = -Math.PI / 2;
+                stile.position.set(x, y + height/2, z - depth/2);
+                stile.castShadow = true;
+                stile.receiveShadow = true;
+                parent.add(stile);
             }
-            
-            addGlazingBars(sash, material, glassWidth, glassHeight, pattern) {
-                if (pattern === 'none') return;
+
+            createExtrudedRail(parent, x, y, z, width, height, depth) {
+                const profile = this.createOvoloProfile(height / this.SCALE, depth / this.SCALE, 4);
                 
-                const barThickness = this.BAR_THICKNESS * this.SCALE;
-                const barDepth = this.GLASS_THICKNESS * this.SCALE * 1.5;
+                const extrudeSettings = {
+                    steps: 1,
+                    depth: width,
+                    bevelEnabled: false
+                };
+
+                const railGeom = new THREE.ExtrudeGeometry(profile, extrudeSettings);
+                const rail = new THREE.Mesh(railGeom, this.frameMaterial);
                 
-                // Pattern definitions
+                rail.rotation.x = -Math.PI / 2;
+                rail.rotation.z = -Math.PI / 2;
+                rail.position.set(x - width/2, y + height/2, z - depth/2);
+                rail.castShadow = true;
+                rail.receiveShadow = true;
+                parent.add(rail);
+            }
+
+            createMeetingRailMesh(parent, x, y, z, width, height, depth, type) {
+                const profile = this.createMeetingRailProfile(type);
+                
+                const extrudeSettings = {
+                    steps: 1,
+                    depth: width,
+                    bevelEnabled: false
+                };
+
+                const railGeom = new THREE.ExtrudeGeometry(profile, extrudeSettings);
+                const rail = new THREE.Mesh(railGeom, this.frameMaterial);
+                
+                rail.rotation.x = -Math.PI / 2;
+                rail.rotation.z = -Math.PI / 2;
+                rail.position.set(x - width/2, y + height/2, z - depth/2);
+                rail.castShadow = true;
+                rail.receiveShadow = true;
+                parent.add(rail);
+
+                // Add weather seal
+                this.addWeatherSeal(parent, x, y, z, width, height, type);
+            }
+
+            addWeatherSeal(parent, x, y, z, width, height, type) {
+                const sealW = this.dim.sealWidth * this.SCALE;
+                const sealD = this.dim.sealDepth * this.SCALE;
+                
+                const sealGeom = new THREE.BoxGeometry(width, sealW, sealD);
+                const seal = new THREE.Mesh(sealGeom, this.sealMaterial);
+                
+                if (type === 'upper') {
+                    seal.position.set(x, y - height/2 - sealW/2, z);
+                } else {
+                    seal.position.set(x, y + height/2 + sealW/2, z);
+                }
+                parent.add(seal);
+            }
+
+            createHorns(parent, w, h, stileW, sashD) {
+                const hornsL = this.dim.hornsLength * this.SCALE;
+
+                // Left horn
+                const leftProfile = this.createOvoloProfile(stileW / this.SCALE, sashD / this.SCALE, 4);
+                const leftExtrude = { steps: 1, depth: hornsL, bevelEnabled: false };
+                const leftHornGeom = new THREE.ExtrudeGeometry(leftProfile, leftExtrude);
+                const leftHorn = new THREE.Mesh(leftHornGeom, this.frameMaterial);
+                
+                leftHorn.rotation.x = -Math.PI / 2;
+                leftHorn.position.set(-w/2, -h/2 - hornsL/2, -sashD/2);
+                leftHorn.castShadow = true;
+                parent.add(leftHorn);
+
+                // Left horn end cap (rounded)
+                const endCapGeom = new THREE.CylinderGeometry(stileW/2, stileW/2, sashD, 16);
+                const leftEndCap = new THREE.Mesh(endCapGeom, this.frameMaterial);
+                leftEndCap.rotation.x = Math.PI / 2;
+                leftEndCap.position.set(-w/2 + stileW/2, -h/2 - hornsL, 0);
+                leftEndCap.castShadow = true;
+                parent.add(leftEndCap);
+
+                // Right horn
+                const rightHornGeom = new THREE.ExtrudeGeometry(leftProfile, leftExtrude);
+                const rightHorn = new THREE.Mesh(rightHornGeom, this.frameMaterial);
+                
+                rightHorn.rotation.x = -Math.PI / 2;
+                rightHorn.position.set(w/2 - stileW, -h/2 - hornsL/2, -sashD/2);
+                rightHorn.castShadow = true;
+                parent.add(rightHorn);
+
+                // Right horn end cap
+                const rightEndCap = new THREE.Mesh(endCapGeom, this.frameMaterial);
+                rightEndCap.rotation.x = Math.PI / 2;
+                rightEndCap.position.set(w/2 - stileW/2, -h/2 - hornsL, 0);
+                rightEndCap.castShadow = true;
+                parent.add(rightEndCap);
+            }
+
+            createGlassPane(parent, w, h, stileW, railH, type) {
+                const glassW = w - stileW * 2 - 0.01;
+                const glassH = h - railH * 2 - 0.01;
+                const glassT = this.config.glassThickness * this.SCALE;
+
+                const glassGeom = new THREE.BoxGeometry(glassW, glassH, glassT);
+                const glass = new THREE.Mesh(glassGeom, this.glassMaterial);
+                glass.position.set(0, 0, 0);
+                parent.add(glass);
+            }
+
+            createGlazingBars(parent, w, h, stileW, railH, pattern) {
+                const barW = this.config.barWidth * this.SCALE;
+                const barD = this.dim.barDepth * this.SCALE;
+                
+                const glassW = w - stileW * 2;
+                const glassH = h - railH * 2;
+
                 const patterns = {
                     '2x2': { h: 0, v: 1 },
                     '3x3': { h: 0, v: 2 },
@@ -577,185 +1151,351 @@
                     '6x6': { h: 1, v: 2 },
                     '9x9': { h: 2, v: 2 }
                 };
-                
-                const divisions = patterns[pattern];
-                if (!divisions) return;
-                
-                // Horizontal bars
-                for (let i = 1; i <= divisions.h; i++) {
-                    const y = (glassHeight / (divisions.h + 1)) * i - glassHeight / 2;
-                    const barGeom = new THREE.BoxGeometry(glassWidth, barThickness, barDepth);
-                    const bar = new THREE.Mesh(barGeom, material);
-                    bar.position.y = y;
-                    bar.position.z = barDepth / 2;
-                    sash.add(bar);
-                }
-                
+
+                const p = patterns[pattern];
+                if (!p) return;
+
+                const barProfile = this.createGlazingBarProfile();
+
                 // Vertical bars
-                for (let i = 1; i <= divisions.v; i++) {
-                    const x = (glassWidth / (divisions.v + 1)) * i - glassWidth / 2;
-                    const barGeom = new THREE.BoxGeometry(barThickness, glassHeight, barDepth);
-                    const bar = new THREE.Mesh(barGeom, material);
-                    bar.position.x = x;
-                    bar.position.z = barDepth / 2;
-                    sash.add(bar);
+                for (let i = 1; i <= p.v; i++) {
+                    const xPos = -glassW/2 + (glassW / (p.v + 1)) * i;
+                    this.createExtrudedBar(parent, xPos, 0, 0, barW, glassH, barD, 'vertical', barProfile);
+                }
+
+                // Horizontal bars
+                for (let i = 1; i <= p.h; i++) {
+                    const yPos = -glassH/2 + (glassH / (p.h + 1)) * i;
+                    this.createExtrudedBar(parent, 0, yPos, 0, glassW, barW, barD, 'horizontal', barProfile);
                 }
             }
-            
+
+            createExtrudedBar(parent, x, y, z, width, height, depth, orientation, profile) {
+                const length = orientation === 'vertical' ? height : width;
+                
+                const extrudeSettings = {
+                    steps: 1,
+                    depth: length,
+                    bevelEnabled: false
+                };
+
+                const barGeom = new THREE.ExtrudeGeometry(profile, extrudeSettings);
+                const bar = new THREE.Mesh(barGeom, this.frameMaterial);
+                
+                if (orientation === 'vertical') {
+                    bar.rotation.x = -Math.PI / 2;
+                    bar.position.set(x - width/2 * this.SCALE, y + length/2, z - depth/2);
+                } else {
+                    bar.rotation.x = -Math.PI / 2;
+                    bar.rotation.z = -Math.PI / 2;
+                    bar.position.set(x - length/2, y + height/2 * this.SCALE, z - depth/2);
+                }
+                
+                bar.castShadow = true;
+                parent.add(bar);
+            }
+
+            createGlazingBeads(parent, w, h, stileW, railH) {
+                const beadProfile = this.createGlazingBeadProfile();
+                const glassW = w - stileW * 2;
+                const glassH = h - railH * 2;
+                const glassT = this.config.glassThickness * this.SCALE;
+
+                // Top bead
+                const topExtrude = { steps: 1, depth: glassW, bevelEnabled: false };
+                const topBeadGeom = new THREE.ExtrudeGeometry(beadProfile, topExtrude);
+                const topBead = new THREE.Mesh(topBeadGeom, this.frameMaterial);
+                topBead.rotation.y = Math.PI / 2;
+                topBead.position.set(-glassW/2, glassH/2 - this.dim.glazingBeadHeight * this.SCALE, glassT/2);
+                parent.add(topBead);
+
+                // Bottom bead
+                const bottomBead = topBead.clone();
+                bottomBead.position.y = -glassH/2;
+                parent.add(bottomBead);
+
+                // Left bead
+                const leftExtrude = { steps: 1, depth: glassH, bevelEnabled: false };
+                const leftBeadGeom = new THREE.ExtrudeGeometry(beadProfile, leftExtrude);
+                const leftBead = new THREE.Mesh(leftBeadGeom, this.frameMaterial);
+                leftBead.rotation.z = Math.PI / 2;
+                leftBead.rotation.y = Math.PI / 2;
+                leftBead.position.set(-glassW/2, -glassH/2, glassT/2);
+                parent.add(leftBead);
+
+                // Right bead
+                const rightBead = leftBead.clone();
+                rightBead.position.x = glassW/2 - this.dim.glazingBeadWidth * this.SCALE;
+                parent.add(rightBead);
+            }
+
+            buildPartingBeads(w, h, boxW, boxD) {
+                const beadGroup = new THREE.Group();
+                beadGroup.name = 'partingBeads';
+
+                const beadW = this.dim.partingBeadWidth * this.SCALE;
+                const beadD = this.dim.partingBeadDepth * this.SCALE;
+
+                // Left parting bead
+                const leftBeadGeom = new THREE.BoxGeometry(beadW, h - boxW, beadD);
+                const leftBead = new THREE.Mesh(leftBeadGeom, this.frameMaterial);
+                leftBead.position.set(-w/2 + boxW + beadW/2, 0, 0);
+                beadGroup.add(leftBead);
+
+                // Right parting bead
+                const rightBead = leftBead.clone();
+                rightBead.position.x = w/2 - boxW - beadW/2;
+                beadGroup.add(rightBead);
+
+                // Top parting bead
+                const topBeadGeom = new THREE.BoxGeometry(w - boxW * 2 - beadW * 2, beadW, beadD);
+                const topBead = new THREE.Mesh(topBeadGeom, this.frameMaterial);
+                topBead.position.set(0, h/2 - boxW - beadW/2, 0);
+                beadGroup.add(topBead);
+
+                this.windowGroup.add(beadGroup);
+            }
+
+            buildStaffBeads(w, h, boxW, boxD) {
+                const beadGroup = new THREE.Group();
+                beadGroup.name = 'staffBeads';
+
+                const beadW = this.dim.staffBeadWidth * this.SCALE;
+                const beadD = this.dim.staffBeadDepth * this.SCALE;
+
+                // Left staff bead
+                const leftBeadGeom = new THREE.BoxGeometry(beadW, h - boxW, beadD);
+                const leftBead = new THREE.Mesh(leftBeadGeom, this.frameMaterial);
+                leftBead.position.set(-w/2 + boxW - beadW/2, 0, -boxD/2 + beadD/2);
+                beadGroup.add(leftBead);
+
+                // Right staff bead
+                const rightBead = leftBead.clone();
+                rightBead.position.x = w/2 - boxW + beadW/2;
+                beadGroup.add(rightBead);
+
+                this.windowGroup.add(beadGroup);
+            }
+
+            // ================================================================
+            // CONTROLS
+            // ================================================================
+
             setupControls() {
                 let isDragging = false;
                 let prevX = 0, prevY = 0;
                 let rotX = 0, rotY = 0;
-                
+
                 this.renderer.domElement.addEventListener('mousedown', (e) => {
                     isDragging = true;
                     prevX = e.clientX;
                     prevY = e.clientY;
                 });
-                
+
                 this.renderer.domElement.addEventListener('mousemove', (e) => {
                     if (!isDragging || !this.windowGroup) return;
-                    
+
                     const deltaX = e.clientX - prevX;
                     const deltaY = e.clientY - prevY;
-                    
+
                     rotY += deltaX * 0.005;
                     rotX += deltaY * 0.005;
-                    rotX = Math.max(-0.5, Math.min(0.5, rotX));
-                    
+                    rotX = Math.max(-0.6, Math.min(0.6, rotX));
+
                     this.windowGroup.rotation.y = rotY;
                     this.windowGroup.rotation.x = rotX;
-                    
-                    // Check if view direction changed (external/internal)
-                    this.checkViewDirection(rotY);
-                    
+
                     prevX = e.clientX;
                     prevY = e.clientY;
                 });
-                
+
                 this.renderer.domElement.addEventListener('mouseup', () => isDragging = false);
                 this.renderer.domElement.addEventListener('mouseleave', () => isDragging = false);
-                
+
                 this.renderer.domElement.addEventListener('wheel', (e) => {
                     e.preventDefault();
-                    this.camera.position.z += e.deltaY * 0.003;
-                    this.camera.position.z = Math.max(2, Math.min(6, this.camera.position.z));
-                });
+                    this.camera.position.z += e.deltaY * 0.002;
+                    this.camera.position.z = Math.max(1.5, Math.min(5, this.camera.position.z));
+                }, { passive: false });
             }
-            
-            updateConfig(newConfig) {
-                const sizeChanged = newConfig.width !== undefined || newConfig.height !== undefined;
-                Object.assign(this.config, newConfig);
-                this.createWindow();
-                
-                // Update background if size changed
-                if (sizeChanged) {
-                    this.updateSkyPlane();
+
+            resetView() {
+                if (this.windowGroup) {
+                    this.windowGroup.rotation.set(0, 0, 0);
+                }
+                this.camera.position.set(0, 0, 2.5);
+            }
+
+            setViewMode(mode) {
+                this.config.viewMode = mode;
+                if (this.windowGroup) {
+                    switch (mode) {
+                        case 'exterior': this.windowGroup.rotation.y = 0; break;
+                        case 'interior': this.windowGroup.rotation.y = Math.PI; break;
+                        case 'section': this.windowGroup.rotation.y = Math.PI / 2; break;
+                    }
                 }
             }
-            
-            onResize() {
+
+            // ================================================================
+            // UPDATE
+            // ================================================================
+
+            updateConfig(newConfig) {
+                const needsRebuild = 
+                    newConfig.width !== undefined ||
+                    newConfig.height !== undefined ||
+                    newConfig.profileStyle !== undefined ||
+                    newConfig.showHorns !== undefined ||
+                    newConfig.cillExtension !== undefined ||
+                    newConfig.upperBars !== undefined ||
+                    newConfig.lowerBars !== undefined ||
+                    newConfig.barWidth !== undefined ||
+                    newConfig.glassThickness !== undefined;
+
+                Object.assign(this.config, newConfig);
+
+                if (newConfig.frameColor) {
+                    this.frameMaterial.color.set(newConfig.frameColor);
+                }
+
+                if (newConfig.glassType) {
+                    this.glassMaterial = this.createGlassMaterial();
+                }
+
+                if (needsRebuild) {
+                    this.buildWindow();
+                }
+
+                if (newConfig.sashPosition !== undefined && this.topSash) {
+                    const h = this.config.height * this.SCALE;
+                    const boxW = this.dim.boxWidth * this.SCALE;
+                    const meetingH = this.dim.meetingRailHeight * this.SCALE;
+                    const sashHeight = (h - boxW * 2) / 2 + meetingH / 2;
+                    const openOffset = (this.config.sashPosition / 100) * sashHeight * 0.8;
+                    this.topSash.position.y = sashHeight/2 - meetingH/2 - openOffset;
+                }
+            }
+
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                this.renderer.render(this.scene, this.camera);
+            }
+
+            handleResize() {
                 const rect = this.container.getBoundingClientRect();
                 this.camera.aspect = rect.width / rect.height;
                 this.camera.updateProjectionMatrix();
                 this.renderer.setSize(rect.width, rect.height);
             }
-            
-            animate() {
-                requestAnimationFrame(() => this.animate());
-                this.renderer.render(this.scene, this.camera);
-            }
         }
 
-        // ============================================
-        // INITIALIZE VIEWER
-        // ============================================
-        
-        let windowViewer;
-        
+        // ====================================================================
+        // INITIALIZATION
+        // ====================================================================
+
+        let viewer;
+
         document.addEventListener('DOMContentLoaded', () => {
-            // Create single viewer
-            windowViewer = new Window3DViewer('window-3d');
-            
-            // Setup controls
-            setupControlListeners();
+            viewer = new ProfessionalWindowViewer('window-3d');
+            setupUIControls();
         });
-        
-        function setupControlListeners() {
-            // Width
+
+        function setupUIControls() {
             document.getElementById('windowWidth').addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
                 document.getElementById('widthValue').textContent = value + ' mm';
-                windowViewer.updateConfig({ width: value });
+                viewer.updateConfig({ width: value });
             });
-            
-            // Height
+
             document.getElementById('windowHeight').addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
                 document.getElementById('heightValue').textContent = value + ' mm';
-                windowViewer.updateConfig({ height: value });
+                viewer.updateConfig({ height: value });
             });
-            
-            // Frame color
+
             document.querySelectorAll('.color-option').forEach(opt => {
                 opt.addEventListener('click', (e) => {
                     document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
                     e.target.classList.add('selected');
-                    
                     const colors = {
-                        'white': '#FAFAFA',
-                        'cream': '#F1EFDC',
-                        'oak': '#D2B48C',
-                        'darkoak': '#8B4513',
-                        'green': '#2F4F4F',
-                        'black': '#1a1a1a'
+                        'white': '#FAFAFA', 'cream': '#F5F5DC', 'oak': '#D2691E',
+                        'darkoak': '#8B4513', 'mahogany': '#6B1C23', 'green': '#2F4F4F',
+                        'black': '#1a1a1a', 'grey': '#708090'
                     };
-                    
-                    const color = colors[e.target.dataset.color];
-                    windowViewer.updateConfig({ frameColor: color });
+                    viewer.updateConfig({ frameColor: colors[e.target.dataset.color] });
                 });
             });
-            
-            // Upper bars
+
+            document.getElementById('profileStyle').addEventListener('change', (e) => {
+                viewer.updateConfig({ profileStyle: e.target.value });
+            });
+
             document.getElementById('upperBars').addEventListener('change', (e) => {
                 const pattern = e.target.value;
-                windowViewer.updateConfig({ upperBars: pattern });
-                
+                viewer.updateConfig({ upperBars: pattern });
                 if (document.getElementById('sameBars').checked) {
                     document.getElementById('lowerBars').value = pattern;
-                    windowViewer.updateConfig({ lowerBars: pattern });
+                    viewer.updateConfig({ lowerBars: pattern });
                 }
             });
-            
-            // Lower bars
-            document.getElementById('lowerBars').addEventListener('change', (e) => {
-                windowViewer.updateConfig({ lowerBars: e.target.value });
-            });
-            
-            // Same bars checkbox
+
             document.getElementById('sameBars').addEventListener('change', (e) => {
                 document.getElementById('lowerBars').disabled = e.target.checked;
                 if (e.target.checked) {
                     const upperPattern = document.getElementById('upperBars').value;
                     document.getElementById('lowerBars').value = upperPattern;
-                    windowViewer.updateConfig({ lowerBars: upperPattern });
+                    viewer.updateConfig({ lowerBars: upperPattern });
                 }
             });
-            
-            // Glass type
-            document.getElementById('glassType').addEventListener('change', (e) => {
-                windowViewer.updateConfig({ glassType: e.target.value });
+
+            document.getElementById('lowerBars').addEventListener('change', (e) => {
+                viewer.updateConfig({ lowerBars: e.target.value });
             });
-            
-            // Sash position
+
+            document.getElementById('barWidth').addEventListener('change', (e) => {
+                viewer.updateConfig({ barWidth: parseInt(e.target.value) });
+            });
+
+            document.getElementById('glassType').addEventListener('change', (e) => {
+                viewer.updateConfig({ glassType: e.target.value });
+            });
+
+            document.getElementById('glassThickness').addEventListener('change', (e) => {
+                const thickness = parseInt(e.target.value);
+                viewer.updateConfig({ glassThickness: thickness });
+                document.getElementById('glazingInfo').textContent = thickness + 'mm DGU';
+            });
+
+            document.getElementById('showHorns').addEventListener('change', (e) => {
+                viewer.updateConfig({ showHorns: e.target.checked });
+            });
+
+            document.getElementById('cillExtension').addEventListener('change', (e) => {
+                viewer.updateConfig({ cillExtension: parseInt(e.target.value) });
+            });
+
             document.getElementById('sashPosition').addEventListener('input', (e) => {
                 const value = parseInt(e.target.value);
                 document.getElementById('sashValue').textContent = value === 0 ? 'Closed' : value + '% open';
-                windowViewer.updateConfig({ sashPosition: value });
+                viewer.updateConfig({ sashPosition: value });
             });
-            
-            // Initial state
-            document.getElementById('lowerBars').disabled = true;
+
+            document.getElementById('toggleSection').addEventListener('click', () => {
+                viewer.setViewMode('section');
+            });
+
+            document.getElementById('resetView').addEventListener('click', () => {
+                viewer.resetView();
+            });
+
+            document.querySelectorAll('.view-mode-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.view-mode-btn').forEach(b => b.classList.remove('selected'));
+                    e.target.classList.add('active');
+                    viewer.setViewMode(e.target.dataset.view);
+                });
+            });
         }
     </script>
 </body>
